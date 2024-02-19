@@ -11,4 +11,4 @@ $ npm install
 $ tsc
 ```
 
-각각의 명령어로 `/node_modules/`와 `/js/` 디렉토리가 생성되면 성공
+명령어로 `/node_modules/` 디렉토리가 생성되고 각종 `*.js`파일이 생성되면 성공
