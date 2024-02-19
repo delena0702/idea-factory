@@ -1,1 +1,3 @@
-alert("Hello World!");
+window.onload = () => {
+    console.log(`Hello World!!!`);
+};
