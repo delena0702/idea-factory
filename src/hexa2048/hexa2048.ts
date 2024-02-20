@@ -26,7 +26,7 @@ namespace Hexa2048 {
         move(direction: Direction): boolean {
             return this.board.move(direction);
         }
-
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
         undo(): boolean {
             throw new Error(`TODO`);
         }
@@ -114,7 +114,51 @@ namespace Hexa2048 {
         }
 
         move(direction: Direction): boolean {
-            throw new Error(`TODO`);
+            const darr: [number[], number[], number[][]][] = [
+                [[0, -1], [0, 1], [[1, 0]]],
+                [[1, 0], [0, 0], [[0, 1]]],
+                [[1, 1], [0, 1], [[0, -1], [1, 0]]],
+                [[0, 1], [0, 0], [[1, 0]]],
+                [[-1, 0], [1, 0], [[0, 1]]],
+                [[-1, -1], [1, 0], [[0, 1], [-1, 0]]]
+            ];
+
+            const N = this.getBoardSize();
+            const [d, s, sd] = darr[direction];
+
+            let [sx, sy] = s;
+            sx *= (N - 1);
+            sy *= (N - 1);
+            
+            const [dx, dy] = d;
+            let retval = this.moveLine(sx, sy, dx, dy);
+            for (const [sdx, sdy] of sd) {
+                while (true) {
+                    const nsx = sx + sdx, nsy = sy + sdy;
+                    if (!this.inBoard(nsx, nsy))
+                        break;
+
+                    retval = retval || this.moveLine(nsx, nsy, dx, dy);
+                    sx = nsx, sy = nsy;
+                }
+            }
+
+            return retval;
+        }
+
+        moveLine(sx: number, sy: number, dx: number, dy: number): boolean {
+            console.log(sx, sy, dx, dy);
+            return false;
+        }
+
+        inBoard(nsx: number, nsy: number): boolean {
+            const N = this.getBoardSize();
+
+            if (!(0 <= nsx && nsx < N))
+                return false;
+            if (!(0 <= nsy && nsy < N))
+                return false;
+            return true;
         }
     }
 
@@ -155,6 +199,10 @@ window.onload = () => {
 
     game.move(Hexa2048.Direction.DOWN_RIGHT);
     console.log(`game.move(Hexa2048.Direction.DOWN_RIGHT);`);
+    game.show();
+
+    game.move(Hexa2048.Direction.RIGHT);
+    console.log(`game.move(Hexa2048.Direction.RIGHT);`);
     game.show();
 
     game.undo();
