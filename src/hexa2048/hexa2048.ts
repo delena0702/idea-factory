@@ -9,24 +9,139 @@ namespace Hexa2048 {
     }
 
     export class Game {
-        constructor () {
+        static readonly SIZE = 3;
 
+        private board: Board;
+
+        constructor() {
+            this.board = new Board(Game.SIZE);
+
+            this.init();
         }
 
         init(): void {
-
+            this.board = new Board(Game.SIZE);
         }
 
-        move(direction: Direction): void {
-
+        move(direction: Direction): boolean {
+            return this.board.move(direction);
         }
 
         undo(): boolean {
-            return false;
+            throw new Error(`TODO`);
         }
 
         reset(): void {
+            throw new Error(`TODO`);
+        }
 
+        show(): void {
+            this.board.show();
+        }
+    }
+
+    class Board {
+        private size: number;
+        private value: number[][];
+
+        constructor(size: number) {
+            Validator.validatePositiveInteger(size);
+
+            this.size = size;
+            this.value = [[]];
+
+            this.initBoard(size);
+        }
+
+        private initBoard(size: number): void {
+            const N = this.getBoardSize();
+            this.value = new Array(N).fill(0).map((_, i) =>
+                new Array(N).fill(0).map((_, j) =>
+                    (-size < i - j && i - j < size) ? 0 : -1
+                )
+            );
+            this.makeRandomCell();
+        }
+
+        makeRandomCell(): boolean {
+            try {
+                const [x, y] = this.getRandomPosition();
+                const cellNumber = Board.getRandomCellNumber();
+                this.value[y][x] = cellNumber;
+
+                return true;
+            }
+            catch (e) {
+                if (e instanceof GameError)
+                    return false;
+                throw e;
+            }
+        }
+
+        static getRandomCellNumber(): number {
+            const sample = [2, 2, 2, 2, 4];
+            sample.sort(() => Math.random() - 0.5);
+            return sample[0];
+        }
+
+        getRandomPosition(): [number, number] {
+            const cells = this.getEmptyCells();
+            cells.sort(() => Math.random() - 0.5);
+
+            if (cells.length == 0)
+                throw GameError.noEmptyCell();
+            return cells[0];
+        }
+
+        getEmptyCells(): [number, number][] {
+            const N = this.getBoardSize();
+
+            const retval = [];
+            for (let i = 0; i < N; i++)
+                for (let j = 0; j < N; j++)
+                    if (this.value[i][j] == 0)
+                        retval.push([j, i] as [number, number]);
+            return retval;
+        }
+
+        getBoardSize(): number {
+            Validator.validatePositiveInteger(this.size);
+            return 2 * this.size - 1;
+        }
+
+        show(): void {
+            console.log(JSON.parse(JSON.stringify(this.value)));
+        }
+
+        move(direction: Direction): boolean {
+            throw new Error(`TODO`);
+        }
+    }
+
+    class Validator {
+        static validatePositiveInteger(value: number): void {
+            this.validateInteger(value);
+            if (value <= 0)
+                GameError.nonPositiveValue(value);
+        }
+
+        static validateInteger(value: number): void {
+            if (Math.floor(value) != value)
+                GameError.noInteger(value);
+        }
+    }
+
+    class GameError extends Error {
+        static noEmptyCell() {
+            throw new Error("There are no empty cells on the board.");
+        }
+
+        static nonPositiveValue(value: number): never {
+            throw new Error(`${value} is non-positive.`);
+        }
+
+        static noInteger(value: number): never {
+            throw new Error(`${value} is no integer.`);
         }
     }
 }
@@ -35,8 +150,18 @@ window.onload = () => {
     console.log(`Hello World`);
 
     const game = new Hexa2048.Game();
-    game.init();
+    console.log(`const game = new Hexa2048.Game();`);
+    game.show();
+
     game.move(Hexa2048.Direction.DOWN_RIGHT);
+    console.log(`game.move(Hexa2048.Direction.DOWN_RIGHT);`);
+    game.show();
+
     game.undo();
+    console.log(`game.undo();`);
+    game.show();
+    
     game.reset();
+    console.log(`game.reset();`);
+    game.show();
 };
