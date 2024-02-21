@@ -114,32 +114,20 @@ namespace Hexa2048 {
         }
 
         public move(direction: Direction): boolean {
-            const darr: [number[], number[], number[][]][] = [
-                [[0, -1], [0, 1], [[1, 0]]],
-                [[1, 0], [0, 0], [[0, 1]]],
-                [[1, 1], [0, 1], [[0, -1], [1, 0]]],
-                [[0, 1], [0, 0], [[1, 0]]],
-                [[-1, 0], [1, 0], [[0, 1]]],
-                [[-1, -1], [1, 0], [[0, 1], [-1, 0]]]
-            ];
-
             const N = this.getBoardSize();
-            const [d, s, sd] = darr[direction];
+            let [diff, start, diffOfStarts] = Position.getNavigationVectors(direction);
 
-            let [sx, sy] = s;
-            sx *= (N - 1);
-            sy *= (N - 1);
-
-            const [dx, dy] = d;
-            let isChanged = this.moveLine(sx, sy, dx, dy);
-            for (const [sdx, sdy] of sd) {
+            let here = start.times(N - 1);
+            let isChanged = this.moveLine(here, diff);
+            for (const diffOfStart of diffOfStarts) {
                 while (true) {
-                    const nsx = sx + sdx, nsy = sy + sdy;
-                    if (!this.inBoard(nsx, nsy))
+                    const next = here.add(diffOfStart);
+
+                    if (!this.inBoard(next))
                         break;
 
-                    isChanged = isChanged || this.moveLine(nsx, nsy, dx, dy);
-                    sx = nsx, sy = nsy;
+                    isChanged = this.moveLine(next, diff) || isChanged;
+                    here = next;
                 }
             }
 
@@ -151,85 +139,123 @@ namespace Hexa2048 {
             return 2 * this.size - 1;
         }
 
-        private inBoard(x: number, y: number): boolean {
+        private inBoard(pos: Position): boolean {
             const N = this.getBoardSize();
 
-            if (!(0 <= x && x < N))
+            if (!(0 <= pos.x && pos.x < N))
                 return false;
-            if (!(0 <= y && y < N))
+            if (!(0 <= pos.y && pos.y < N))
                 return false;
             return true;
         }
 
-        private moveLine(sx: number, sy: number, dx: number, dy: number): boolean {
-            let x = sx, y = sy;
-
+        private moveLine(start: Position, diff: Position): boolean {
+            let here = start, pre = start;
             let isChanged = false;
-            let prex = sx, prey = sy;
             while (true) {
-                if (!this.inBoard(x, y) || this.value[y][x] == Board.INVALID_CELL) {
-                    isChanged = isChanged || this.moveLineInSection(prex, prey, dx, dy, x, y);
-
-                    prex = x + dx;
-                    prey = y + dy;
+                if (!this.inBoard(here) || this.getValue(here) == Board.INVALID_CELL) {
+                    isChanged = this.moveLineInSection(pre, here, diff) || isChanged;
+                    pre = here.add(diff);
                 }
 
-                if (!this.inBoard(x, y))
+                if (!this.inBoard(here))
                     break;
 
-                x += dx;
-                y += dy;
+                here = here.add(diff);
             }
 
             return isChanged;
         }
 
-        private moveLineInSection(sx: number, sy: number, dx: number, dy: number, tx: number, ty: number): boolean {
-            if (sx == tx && sy == ty)
+        private moveLineInSection(start: Position, end: Position, diff: Position): boolean {
+            if (start.equals(end))
                 return false;
 
             const stack: number[] = [];
             let isChanged = false;
 
-            let x = sx, y = sy;
-            while (!(x == tx && y == ty)) {
-                if (this.value[y][x]) {
-                    if (stack.length && stack[stack.length - 1] == this.value[y][x]) {
-                        this.value[y][x] *= 2;
-                        stack.pop();
-                        isChanged = true;
-                    }
-                    stack.push(this.value[y][x]);
+            let here = start;
+            while (!(here.equals(end))) {
+                if (stack.length && stack[stack.length - 1] == this.getValue(here)) {
+                    this.setValue(here, this.getValue(here) * 2);
+                    stack.pop();
+                    isChanged = true;
                 }
 
-                x += dx;
-                y += dy;
+                if (this.getValue(here))
+                    stack.push(this.getValue(here));
+
+                here = here.add(diff);
             }
 
-            x = tx - dx, y = ty - dy;
+            here = end.add(diff.times(-1));
             while (true) {
                 if (stack.length == 0)
                     stack.push(0);
-                if (this.value[y][x] != stack[stack.length - 1])
+                if (this.getValue(here) != stack[stack.length - 1])
                     isChanged = true;
 
-                this.value[y][x] = stack[stack.length - 1];
+                this.setValue(here, stack[stack.length - 1]);
                 stack.pop();
 
-                if (x == sx && y == sy)
+                if (here.equals(start))
                     break;
 
-                x -= dx;
-                y -= dy;
+                here = here.add(diff.times(-1));
             }
 
             return isChanged;
         }
+
+        private getValue(pos: Position): number {
+            return this.value[pos.y][pos.x];
+        }
+
+        private setValue(pos: Position, value: number): void {
+            this.value[pos.y][pos.x] = value;
+        }
     }
 
+    type PairOfNumber = [number, number];
+
     class Position {
-        constructor () {
-            throw `TODO : refactor : 좌표 전달 및 계산 방식 수정`;
+        public x: number;
+        public y: number;
+
+        public constructor (x: number, y: number) {
+            this.x = x;
+            this.y = y;
+        }
+        
+        public equals(pos: Position): boolean {
+            return (this.x == pos.x) && (this.y == pos.y);
+        }
+
+        public add(pos: Position): Position {
+            return new Position(this.x + pos.x, this.y + pos.y);
+        }
+
+        public times(k: number): Position {
+            return new Position(this.x * k, this.y * k);
+        }
+
+        public static getNavigationVectors(direction: Direction): [Position, Position, Position[]] {
+            const darr: [PairOfNumber, PairOfNumber, PairOfNumber[]][] = [
+                [[0, -1], [0, 1], [[1, 0]]],
+                [[1, 0], [0, 0], [[0, 1]]],
+                [[1, 1], [0, 1], [[0, -1], [1, 0]]],
+                [[0, 1], [0, 0], [[1, 0]]],
+                [[-1, 0], [1, 0], [[0, 1]]],
+                [[-1, -1], [1, 0], [[0, 1], [-1, 0]]]
+            ];
+
+            const retval: [Position, Position, Position[]] = [
+                new Position(...darr[direction][0]),
+                new Position(...darr[direction][1]),
+                darr[direction][2].map(x => new Position(...x))
+            ];
+
+            return retval;
         }
     }
 
