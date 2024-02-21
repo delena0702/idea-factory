@@ -24,9 +24,13 @@ namespace Hexa2048 {
         }
 
         move(direction: Direction): boolean {
-            return this.board.move(direction);
+            if (!this.board.move(direction))
+                return false;
+
+            this.board.makeRandomCell();
+            return true;
         }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+
         undo(): boolean {
             throw new Error(`TODO`);
         }
@@ -41,6 +45,7 @@ namespace Hexa2048 {
     }
 
     class Board {
+        static readonly INVALID_CELL = -1;
         private size: number;
         private value: number[][];
 
@@ -57,7 +62,7 @@ namespace Hexa2048 {
             const N = this.getBoardSize();
             this.value = new Array(N).fill(0).map((_, i) =>
                 new Array(N).fill(0).map((_, j) =>
-                    (-size < i - j && i - j < size) ? 0 : -1
+                    (-size < i - j && i - j < size) ? 0 : Board.INVALID_CELL
                 )
             );
             this.makeRandomCell();
@@ -129,34 +134,94 @@ namespace Hexa2048 {
             let [sx, sy] = s;
             sx *= (N - 1);
             sy *= (N - 1);
-            
+
             const [dx, dy] = d;
-            let retval = this.moveLine(sx, sy, dx, dy);
+            let isChanged = this.moveLine(sx, sy, dx, dy);
             for (const [sdx, sdy] of sd) {
                 while (true) {
                     const nsx = sx + sdx, nsy = sy + sdy;
                     if (!this.inBoard(nsx, nsy))
                         break;
 
-                    retval = retval || this.moveLine(nsx, nsy, dx, dy);
+                    isChanged = isChanged || this.moveLine(nsx, nsy, dx, dy);
                     sx = nsx, sy = nsy;
                 }
             }
 
-            return retval;
+            return isChanged;
         }
 
         moveLine(sx: number, sy: number, dx: number, dy: number): boolean {
-            console.log(sx, sy, dx, dy);
-            return false;
+            let x = sx, y = sy;
+
+            let isChanged = false;
+            let prex = sx, prey = sy;
+            while (true) {
+                if (!this.inBoard(x, y) || this.value[y][x] == Board.INVALID_CELL) {
+                    isChanged = isChanged || this.moveLineInSection(prex, prey, dx, dy, x, y);
+
+                    prex = x + dx;
+                    prey = y + dy;
+                }
+
+                if (!this.inBoard(x, y))
+                    break;
+
+                x += dx;
+                y += dy;
+            }
+
+            return isChanged;
         }
 
-        inBoard(nsx: number, nsy: number): boolean {
+        moveLineInSection(sx: number, sy: number, dx: number, dy: number, tx: number, ty: number): boolean {
+            if (sx == tx && sy == ty)
+                return false;
+
+            const stack: number[] = [];
+            let isChanged = false;
+
+            let x = sx, y = sy;
+            while (!(x == tx && y == ty)) {
+                if (this.value[y][x]) {
+                    if (stack.length && stack[stack.length - 1] == this.value[y][x]) {
+                        this.value[y][x] *= 2;
+                        stack.pop();
+                        isChanged = true;
+                    }
+                    stack.push(this.value[y][x]);
+                }
+
+                x += dx;
+                y += dy;
+            }
+
+            x = tx - dx, y = ty - dy;
+            while (true) {
+                if (stack.length == 0)
+                    stack.push(0);
+                if (this.value[y][x] != stack[stack.length - 1])
+                    isChanged = true;
+
+                this.value[y][x] = stack[stack.length - 1];
+                stack.pop();
+
+                if (x == sx && y == sy)
+                    break;
+
+                x -= dx;
+                y -= dy;
+            }
+
+            return isChanged;
+        }
+
+        inBoard(x: number, y: number): boolean {
             const N = this.getBoardSize();
 
-            if (!(0 <= nsx && nsx < N))
+            if (!(0 <= x && x < N))
                 return false;
-            if (!(0 <= nsy && nsy < N))
+            if (!(0 <= y && y < N))
                 return false;
             return true;
         }
@@ -208,7 +273,7 @@ window.onload = () => {
     game.undo();
     console.log(`game.undo();`);
     game.show();
-    
+
     game.reset();
     console.log(`game.reset();`);
     game.show();
