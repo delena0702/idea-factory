@@ -68,7 +68,7 @@ namespace Hexa2048 {
             this.makeRandomCell();
         }
 
-        makeRandomCell(): boolean {
+        public makeRandomCell(): boolean {
             try {
                 const [x, y] = this.getRandomPosition();
                 const cellNumber = Board.getRandomCellNumber();
@@ -83,13 +83,11 @@ namespace Hexa2048 {
             }
         }
 
-        static getRandomCellNumber(): number {
-            const sample = [2, 2, 2, 2, 4];
-            sample.sort(() => Math.random() - 0.5);
-            return sample[0];
+        public show(): void {
+            console.log(JSON.parse(JSON.stringify(this.value)));
         }
 
-        getRandomPosition(): [number, number] {
+        private getRandomPosition(): [number, number] {
             const cells = this.getEmptyCells();
             cells.sort(() => Math.random() - 0.5);
 
@@ -98,7 +96,7 @@ namespace Hexa2048 {
             return cells[0];
         }
 
-        getEmptyCells(): [number, number][] {
+        private getEmptyCells(): [number, number][] {
             const N = this.getBoardSize();
 
             const retval = [];
@@ -109,16 +107,13 @@ namespace Hexa2048 {
             return retval;
         }
 
-        getBoardSize(): number {
-            Validator.validatePositiveInteger(this.size);
-            return 2 * this.size - 1;
+        private static getRandomCellNumber(): number {
+            const sample = [2, 2, 2, 2, 4];
+            sample.sort(() => Math.random() - 0.5);
+            return sample[0];
         }
 
-        show(): void {
-            console.log(JSON.parse(JSON.stringify(this.value)));
-        }
-
-        move(direction: Direction): boolean {
+        public move(direction: Direction): boolean {
             const darr: [number[], number[], number[][]][] = [
                 [[0, -1], [0, 1], [[1, 0]]],
                 [[1, 0], [0, 0], [[0, 1]]],
@@ -151,7 +146,22 @@ namespace Hexa2048 {
             return isChanged;
         }
 
-        moveLine(sx: number, sy: number, dx: number, dy: number): boolean {
+        private getBoardSize(): number {
+            Validator.validatePositiveInteger(this.size);
+            return 2 * this.size - 1;
+        }
+
+        private inBoard(x: number, y: number): boolean {
+            const N = this.getBoardSize();
+
+            if (!(0 <= x && x < N))
+                return false;
+            if (!(0 <= y && y < N))
+                return false;
+            return true;
+        }
+
+        private moveLine(sx: number, sy: number, dx: number, dy: number): boolean {
             let x = sx, y = sy;
 
             let isChanged = false;
@@ -174,7 +184,7 @@ namespace Hexa2048 {
             return isChanged;
         }
 
-        moveLineInSection(sx: number, sy: number, dx: number, dy: number, tx: number, ty: number): boolean {
+        private moveLineInSection(sx: number, sy: number, dx: number, dy: number, tx: number, ty: number): boolean {
             if (sx == tx && sy == ty)
                 return false;
 
@@ -215,15 +225,11 @@ namespace Hexa2048 {
 
             return isChanged;
         }
+    }
 
-        inBoard(x: number, y: number): boolean {
-            const N = this.getBoardSize();
-
-            if (!(0 <= x && x < N))
-                return false;
-            if (!(0 <= y && y < N))
-                return false;
-            return true;
+    class Position {
+        constructor () {
+            throw `TODO : refactor : 좌표 전달 및 계산 방식 수정`;
         }
     }
 
