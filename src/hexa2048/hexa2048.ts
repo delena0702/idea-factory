@@ -1,4 +1,4 @@
-namespace Hexa2048 {
+export namespace Hexa2048 {
     export enum Direction {
         UP_RIGHT,
         RIGHT,
@@ -44,7 +44,7 @@ namespace Hexa2048 {
         }
     }
 
-    class Board {
+    export class Board {
         static readonly INVALID_CELL = -1;
         private size: number;
         private value: number[][];
@@ -217,8 +217,7 @@ namespace Hexa2048 {
     }
 
     type PairOfNumber = [number, number];
-
-    class Position {
+    export class Position {
         public x: number;
         public y: number;
 
@@ -259,20 +258,7 @@ namespace Hexa2048 {
         }
     }
 
-    class Validator {
-        static validatePositiveInteger(value: number): void {
-            this.validateInteger(value);
-            if (value <= 0)
-                GameError.nonPositiveValue(value);
-        }
-
-        static validateInteger(value: number): void {
-            if (Math.floor(value) != value)
-                GameError.noInteger(value);
-        }
-    }
-
-    class GameError extends Error {
+    export class GameError extends Error {
         static noEmptyCell() {
             throw new Error("There are no empty cells on the board.");
         }
@@ -285,28 +271,17 @@ namespace Hexa2048 {
             throw new Error(`${value} is no integer.`);
         }
     }
+
+    class Validator {
+        static validatePositiveInteger(value: number): void {
+            this.validateInteger(value);
+            if (value <= 0)
+                GameError.nonPositiveValue(value);
+        }
+
+        static validateInteger(value: number): void {
+            if (Math.floor(value) != value)
+                GameError.noInteger(value);
+        }
+    }
 }
-
-window.onload = () => {
-    console.log(`Hello World`);
-
-    const game = new Hexa2048.Game();
-    console.log(`const game = new Hexa2048.Game();`);
-    game.show();
-
-    game.move(Hexa2048.Direction.DOWN_RIGHT);
-    console.log(`game.move(Hexa2048.Direction.DOWN_RIGHT);`);
-    game.show();
-
-    game.move(Hexa2048.Direction.RIGHT);
-    console.log(`game.move(Hexa2048.Direction.RIGHT);`);
-    game.show();
-
-    game.undo();
-    console.log(`game.undo();`);
-    game.show();
-
-    game.reset();
-    console.log(`game.reset();`);
-    game.show();
-};
