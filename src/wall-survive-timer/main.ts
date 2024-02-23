@@ -1,5 +1,4 @@
 namespace WallSurviveTimer {
-    type Speed = number;
     type Time = number;
 
     enum EnemyType {
@@ -24,33 +23,92 @@ namespace WallSurviveTimer {
         ];
     }
 
-    class Timer {
-        tic: number;
-        speed: Speed;
+    export class Timer {
+        speed: number;
 
-        constructor() {
-            this.tic = 0;
+        startTime: Time | null;
+        passedTime: Time;
+
+        intervalValue: number | null;
+
+        constructor();
+        constructor(speed: number);
+        constructor(speed?: number) {
             this.speed = 1.44;
-        }
+            if (speed !== undefined)
+                this.speed = speed;
+            
+            this.startTime = null;
+            this.passedTime = 0;
 
-        setSpeed(speed: Speed): void {
-
+            this.intervalValue = null;
         }
 
         start(): void {
+            this.startTime = new Date().getTime();
+            this.passedTime = 0;
+            this.startProc();
+        }
 
+        isRunningProc(): boolean {
+            return this.intervalValue !== null;
+        }
+
+        startProc(): void {
+            this.intervalValue = setInterval(this.proc.bind(this), 100);
+        }
+
+        stopProc(): void {
+            if (this.intervalValue === null)
+                TimerError.noRunningTimer();
+            clearInterval(this.intervalValue);
+            this.intervalValue = null;
+        }
+
+        proc(): void {
+            if (this.startTime === null)
+                TimerError.startTimeIsNull();
+
+            this.passedTime = new Date().getTime() - this.startTime;
+
+            // DO SOMETHING
+            // console.log(this.startTime, this.passedTime);
         }
 
         pause(): void {
+            if (this.startTime === null)
+                TimerError.startTimeIsNull();
 
+            this.passedTime = new Date().getTime() - this.startTime;
+            this.startTime = null;
+
+            this.stopProc();
+        }
+
+        restart(): void {
+            this.startTime = new Date().getTime() - this.passedTime;
+            this.startProc();
         }
 
         stop(): void {
-
+            this.startTime = null;
+            this.passedTime = 0;
+            this.stopProc();
         }
 
         skip(time: Time): void {
+            this.startTime = new Date().getTime() - time;
+            this.passedTime = time;
+        }
+    }
 
+    class TimerError extends Error {
+        static noRunningTimer(): never {
+            throw new TimerError("타이머가 실행중이지 않습니다.");
+        }
+
+        static startTimeIsNull(): never {
+            throw new TimerError(`startTime이 null인 상태로 기능을 수행할 수 없습니다.`);
         }
     }
 }
