@@ -1,4 +1,4 @@
-namespace WallSurviveTimer {
+export namespace WallSurviveTimer {
     type Time = number;
 
     enum EnemyType {
@@ -24,16 +24,16 @@ namespace WallSurviveTimer {
     }
 
     export class Timer {
-        speed: number;
+        private speed: number;
 
-        startTime: Time | null;
-        passedTime: Time;
+        private startTime: Time | null;
+        private passedTime: Time;
 
-        intervalValue: number | null;
+        private intervalValue: number | null;
 
-        constructor();
-        constructor(speed: number);
-        constructor(speed?: number) {
+        public constructor();
+        public constructor(speed: number);
+        public constructor(speed?: number) {
             this.speed = 1.44;
             if (speed !== undefined)
                 this.speed = speed;
@@ -44,28 +44,28 @@ namespace WallSurviveTimer {
             this.intervalValue = null;
         }
 
-        start(): void {
+        public start(): void {
             this.startTime = new Date().getTime();
             this.passedTime = 0;
             this.startProc();
         }
 
-        isRunningProc(): boolean {
+        private isRunningProc(): boolean {
             return this.intervalValue !== null;
         }
 
-        startProc(): void {
+        private startProc(): void {
             this.intervalValue = setInterval(this.proc.bind(this), 100);
         }
 
-        stopProc(): void {
+        private stopProc(): void {
             if (this.intervalValue === null)
                 TimerError.noRunningTimer();
             clearInterval(this.intervalValue);
             this.intervalValue = null;
         }
 
-        proc(): void {
+        private proc(): void {
             if (this.startTime === null)
                 TimerError.startTimeIsNull();
 
@@ -75,7 +75,7 @@ namespace WallSurviveTimer {
             // console.log(this.startTime, this.passedTime);
         }
 
-        pause(): void {
+        public pause(): void {
             if (this.startTime === null)
                 TimerError.startTimeIsNull();
 
@@ -85,24 +85,24 @@ namespace WallSurviveTimer {
             this.stopProc();
         }
 
-        restart(): void {
+        public restart(): void {
             this.startTime = new Date().getTime() - this.passedTime;
             this.startProc();
         }
 
-        stop(): void {
+        public stop(): void {
             this.startTime = null;
             this.passedTime = 0;
             this.stopProc();
         }
 
-        skip(time: Time): void {
+        public skip(time: Time): void {
             this.startTime = new Date().getTime() - time;
             this.passedTime = time;
         }
     }
 
-    class TimerError extends Error {
+    export class TimerError extends Error {
         static noRunningTimer(): never {
             throw new TimerError("타이머가 실행중이지 않습니다.");
         }
