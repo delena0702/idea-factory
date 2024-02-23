@@ -1,26 +1,66 @@
 export namespace WallSurviveTimer {
     type Time = number;
 
+    type RawEventData = [string, string];
+    type EventData = [number, string];
+
+    type GameTime = number;
+
     enum EnemyType {
         WARNING = 0,
         BOSS = 1,
     }
 
-    class EnemyData {
-        static readonly data = [
+    class EventDataStorage {
+        static readonly data: [EnemyType, RawEventData[]][] = [
             [EnemyType.BOSS, [['5:00', '공생충 => 촉수형제/식충 => 군단숙주'], ['12:50', '촉수형제 or 군단숙주']]],
             [EnemyType.BOSS, [['9:00', '자가라의 헤비좀비 => 자가라/질럿 + 메딕 => 감염된 탱크'], ['30:00', '자가라 or 감염된 탱크']]],
             [EnemyType.BOSS, [['31:00', '군단충 + 방사능 미친개 => 살모사/피갈리스크 => 오메가리스크'], ['46:40', '살모사 or 오메가리스크']]],
             [EnemyType.BOSS, [['45:00', '변종뮤탈 + 감염된 벤시 => ??/수호군주 => ??'], ['1:03:20', '감염된 토르 or 거대괴수']]],
             [EnemyType.BOSS, [['01:13:30', '브루탈리스크']]],
+
             [EnemyType.WARNING, [['19:00', '대공경보']]],
             [EnemyType.WARNING, [['39:00', '공중 유닛 증가']]],
         ];
-
-
     }
 
     class TimerTask {
+        type: EnemyType;
+        timeline: EventData[];
+
+        constructor(type: EnemyType, timeline: RawEventData[]) {
+            this.type = type;
+            throw "TODO !!!!!!!!!"
+            // this.timeline = 123123123;
+        }
+    }
+
+    export class TimeConverter {
+        static str2num(str: string): GameTime {
+            try {
+                const result = str.split(':').reduce((a, x) => a * 60 + parseInt(x), 0);
+                if (isNaN(result))
+                    return TimerError.InvalidTimeString(str);
+                return result;
+            } catch (e) {
+                TimerError.InvalidTimeString(str);
+            }
+        }
+
+        static num2str(num: GameTime): string {
+            const arr = [0, 0, 0];
+            arr[2] = num % 60;
+            arr[1] = Math.floor(num % 3600 / 60);
+            arr[0] = Math.floor(num / 3600);
+
+            if (arr[0])
+                return `${arr[0]}:${this.padSize(arr[1])}:${this.padSize(arr[2])}`;
+            return `${arr[1]}:${this.padSize(arr[2])}`;
+        }
+
+        static padSize(num: number): string {
+            return num.toString().padStart(2, '0');
+        }
     }
 
     export class Timer {
@@ -103,6 +143,10 @@ export namespace WallSurviveTimer {
     }
 
     export class TimerError extends Error {
+        static InvalidTimeString(str: string): never {
+            throw new TimerError(`${str}은 시간을 나타내는 문자열이 아닙니다.`);
+        }
+
         static noRunningTimer(): never {
             throw new TimerError("타이머가 실행중이지 않습니다.");
         }
