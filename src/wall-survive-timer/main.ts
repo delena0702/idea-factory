@@ -4,8 +4,6 @@ export namespace WallSurviveTimer {
     type RawEventData = [string, string];
     type EventData = [number, string];
 
-    type GameTime = number;
-
     export enum EnemyType {
         WARNING = 0,
         BOSS = 1,
@@ -25,29 +23,31 @@ export namespace WallSurviveTimer {
     }
 
     export class TimeConverter {
-        public static str2num(str: string): GameTime {
+        public static str2num(str: string): Time {
             try {
                 const result = str.split(':').reduce((a, x) => a * 60 + parseInt(x), 0);
                 if (isNaN(result))
                     return TimerError.InvalidTimeString(str);
-                return result;
+                return result * 1000;
             } catch (e) {
                 TimerError.InvalidTimeString(str);
             }
         }
 
-        public static num2str(num: GameTime): string {
+        public static num2str(num: Time): string {
             const arr = [0, 0, 0];
+
+            num = Math.floor(num / 1000);
             arr[2] = num % 60;
             arr[1] = Math.floor(num % 3600 / 60);
             arr[0] = Math.floor(num / 3600);
 
             if (arr[0])
-                return `${arr[0]}:${this.padSize(arr[1])}:${this.padSize(arr[2])}`;
-            return `${arr[1]}:${this.padSize(arr[2])}`;
+                return `${arr[0]}:${this.padZero(arr[1])}:${this.padZero(arr[2])}`;
+            return `${arr[1]}:${this.padZero(arr[2])}`;
         }
 
-        private static padSize(num: number): string {
+        private static padZero(num: number): string {
             return num.toString().padStart(2, '0');
         }
     }
@@ -75,7 +75,7 @@ export namespace WallSurviveTimer {
             return this.type;
         }
 
-        public getEventTime(): GameTime | null {
+        public getEventTime(): Time | null {
             if (!(this.idx < this.timeline.length))
                 return null;
             return this.timeline[this.idx][0];
@@ -87,7 +87,7 @@ export namespace WallSurviveTimer {
             return this.timeline[this.idx][1];
         }
 
-        public getNextEventTime(): GameTime | null {
+        public getNextEventTime(): Time | null {
             if (!(this.idx + 1 < this.timeline.length))
                 return null;
             return this.timeline[this.idx + 1][0];
@@ -111,7 +111,7 @@ export namespace WallSurviveTimer {
             this.idx = 0;
         }
 
-        public sync(time: GameTime): void {
+        public sync(time: Time): void {
             this.clear();
 
             let s = 0, e = this.timeline.length, m = 0;
@@ -129,7 +129,15 @@ export namespace WallSurviveTimer {
     }
 
     export class TimerTaskManager {
-        // TODO : TimerTask 들의 순서를 관리하고, 출력을 위탁하는 형태로 구성 
+        private value: TimerTask[];
+
+        constructor() {
+            this.value = [];
+        }
+
+        addTask(task: TimerTask): void {
+            this.value.push(task);
+        }
     }
 
     export class Timer {

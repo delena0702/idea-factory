@@ -20,7 +20,7 @@ class TimerTest extends Testable {
 class TimeConverterTest extends Testable {
     static test_str2num_정상동작(): void {
         const timeString = `1:02:03`;
-        const answer = 1 * 3600 + 2 * 60 + 3;
+        const answer = (1 * 3600 + 2 * 60 + 3) * 1000;
 
         const result = WallSurviveTimer.TimeConverter.str2num(timeString);
 
@@ -38,7 +38,7 @@ class TimeConverterTest extends Testable {
 
     static test_str2num_정상동작_시간_단위가_없음(): void {
         const timeString = `01:02`;
-        const answer = 1 * 60 + 2;
+        const answer = (1 * 60 + 2) * 1000;
 
         const result = WallSurviveTimer.TimeConverter.str2num(timeString);
 
@@ -68,6 +68,28 @@ class TimeConverterTest extends Testable {
             WallSurviveTimer.TimeConverter.str2num(timeString);
         });
     }
+
+    static test_num2str_3자리(): void {
+        const num = (1 * 3600 + 2 * 60 + 3) * 1000;
+        const answer = '1:02:03';
+
+        console.log(answer, WallSurviveTimer.TimeConverter.num2str(num), "<<<");
+        this.assert(WallSurviveTimer.TimeConverter.num2str(num) == answer);
+    }
+
+    static test_num2str_2자리_경계(): void {
+        const num = (59 * 60 + 59) * 1000;
+        const answer = '59:59';
+
+        this.assert(WallSurviveTimer.TimeConverter.num2str(num) == answer);
+    }
+
+    static test_num2str_3자리_경계(): void {
+        const num = (1 * 3600) * 1000;
+        const answer = '1:00:00';
+
+        this.assert(WallSurviveTimer.TimeConverter.num2str(num) == answer);
+    }
 }
 
 class TimerTaskTest extends Testable {
@@ -79,7 +101,7 @@ class TimerTaskTest extends Testable {
             ]
         );
 
-        this.assert(task.getEventTime() == 1 * 60 + 2);
+        this.assert(task.getEventTime() == WallSurviveTimer.TimeConverter.str2num('1:02'));
         this.assert(task.getEventName() == 'first_task');
     }
 
@@ -103,7 +125,7 @@ class TimerTaskTest extends Testable {
             ]
         );
 
-        this.assert(task.getNextEventTime() == 1 * 3600 + 2 * 60 + 3);
+        this.assert(task.getNextEventTime() == WallSurviveTimer.TimeConverter.str2num('1:02:03'));
         this.assert(task.getNextEventName() == 'second_task');
     }
 
