@@ -1,4 +1,4 @@
-export namespace WallSurviveTimer {
+namespace WallSurviveTimer {
     type Time = number;
 
     type RawEventData = [string, string];
@@ -14,7 +14,7 @@ export namespace WallSurviveTimer {
             [EnemyType.BOSS, [['5:00', '공생충 => 촉수형제/식충 => 군단숙주'], ['12:50', '촉수형제 or 군단숙주']]],
             [EnemyType.BOSS, [['9:00', '자가라의 헤비좀비 => 자가라/질럿 + 메딕 => 감염된 탱크'], ['30:00', '자가라 or 감염된 탱크']]],
             [EnemyType.BOSS, [['31:00', '군단충 + 방사능 미친개 => 살모사/피갈리스크 => 오메가리스크'], ['46:40', '살모사 or 오메가리스크']]],
-            [EnemyType.BOSS, [['45:00', '변종뮤탈 + 감염된 벤시 => ??/수호군주 => ??'], ['1:03:20', '감염된 토르 or 거대괴수']]],
+            [EnemyType.BOSS, [['45:00', '변종뮤탈 + 감염된 벤시 => 감염된 토르/수호군주 => 거대괴수'], ['1:03:20', '감염된 토르 or 거대괴수']]],
             [EnemyType.BOSS, [['01:13:30', '브루탈리스크']]],
 
             [EnemyType.WARNING, [['19:00', '대공경보']]],
@@ -182,10 +182,12 @@ export namespace WallSurviveTimer {
 
         private intervalValue: number | null;
 
+        private timerTaskManager: TimerTaskManager;
+
         public constructor();
         public constructor(speed: number);
         public constructor(speed?: number) {
-            this.speed = 1.44;
+            this.speed = 1.44 * 10;
             if (speed !== undefined)
                 this.speed = speed;
 
@@ -193,11 +195,12 @@ export namespace WallSurviveTimer {
             this.passedTime = 0;
 
             this.intervalValue = null;
+
+            this.timerTaskManager = EventDataStorage.makeTimerTaskManager();
         }
 
         public start(): void {
-            this.startTime = new Date().getTime();
-            this.passedTime = 0;
+            this.skip(0);
             this.startProc();
         }
 
@@ -217,7 +220,16 @@ export namespace WallSurviveTimer {
                 TimerError.startTimeIsNull();
 
             this.passedTime = new Date().getTime() - this.startTime;
-            // Do Something;
+
+            this.timerTaskManager.forwardSync(this.speed * this.passedTime);
+            this.show();
+        }
+
+        private show(): void {
+            // TODO : output 연결 필요!
+            const result = this.timerTaskManager.getTaskList();
+            if (0 < result.length)
+                console.log(this.passedTime, result[0].getEventTime(), result[0].getEventName());
         }
 
         public pause(): void {
@@ -228,22 +240,28 @@ export namespace WallSurviveTimer {
             this.startTime = null;
 
             this.stopProc();
+            this.show();
         }
 
         public restart(): void {
-            this.startTime = new Date().getTime() - this.passedTime;
+            this.skip(this.passedTime);
             this.startProc();
         }
 
         public stop(): void {
             this.startTime = null;
             this.passedTime = 0;
+
             this.stopProc();
+            this.show();
         }
 
         public skip(time: Time): void {
             this.startTime = new Date().getTime() - time;
             this.passedTime = time;
+
+            this.timerTaskManager.sync(this.speed * this.passedTime);
+            this.show();
         }
     }
 
@@ -262,7 +280,7 @@ export namespace WallSurviveTimer {
     }
 }
 
-export namespace DataStructure {
+namespace DataStructure {
     export class Heap<Key, Data> {
         private value: [Key, Data][];
 
