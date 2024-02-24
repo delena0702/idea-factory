@@ -72,8 +72,7 @@ class TimeConverterTest extends Testable {
     static test_num2str_3자리(): void {
         const num = (1 * 3600 + 2 * 60 + 3) * 1000;
         const answer = '1:02:03';
-
-        console.log(answer, WallSurviveTimer.TimeConverter.num2str(num), "<<<");
+        
         this.assert(WallSurviveTimer.TimeConverter.num2str(num) == answer);
     }
 
@@ -198,7 +197,7 @@ class TimerTaskTest extends Testable {
 }
 
 class HeapTest extends Testable {
-    static test_(): void {
+    static test_heap_기본(): void {
         const pq = new DataStructure.Heap<number, number>();
 
         pq.push(3, 3);
@@ -216,10 +215,98 @@ class HeapTest extends Testable {
     }
 }
 
+class TimerTaskManagerTest extends Testable {
+    static test_생성(): void {
+        const manager = new WallSurviveTimer.TimerTaskManager();
+        
+        manager.addTask(new WallSurviveTimer.TimerTask(
+            WallSurviveTimer.EnemyType.BOSS,
+            [
+                ['1:01', '1'],
+                ['1:00:00', '60'],
+                ['10:00', '10'],
+            ]
+        ));
+        
+        manager.addTask(new WallSurviveTimer.TimerTask(
+            WallSurviveTimer.EnemyType.WARNING,
+            [
+                ['1:00', '1.0'],
+                ['1:00:11', '60.1'],
+                ['10:11', '10.1'],
+            ]
+        ));
+
+        const result = manager.getTaskList();
+
+        this.assert(result[0].getEventName() == '1.0');
+        this.assert(result[1].getEventName() == '1');
+    }
+
+    static test_강제_싱크(): void {
+        const manager = new WallSurviveTimer.TimerTaskManager();
+        
+        manager.addTask(new WallSurviveTimer.TimerTask(
+            WallSurviveTimer.EnemyType.BOSS,
+            [
+                ['1:01', '1'],
+                ['1:00:00', '60'],
+                ['10:00', '10'],
+            ]
+        ));
+        
+        manager.addTask(new WallSurviveTimer.TimerTask(
+            WallSurviveTimer.EnemyType.WARNING,
+            [
+                ['1:00', '1.0'],
+                ['1:00:11', '60.1'],
+                ['10:11', '10.1'],
+            ]
+        ));
+
+        manager.sync(WallSurviveTimer.TimeConverter.str2num('10:00'));
+
+        const result = manager.getTaskList();
+
+        this.assert(result[0].getEventName() == '10');
+        this.assert(result[1].getEventName() == '10.1');
+    }
+
+    static test_forward_싱크(): void {
+        const manager = new WallSurviveTimer.TimerTaskManager();
+        
+        manager.addTask(new WallSurviveTimer.TimerTask(
+            WallSurviveTimer.EnemyType.BOSS,
+            [
+                ['1:01', '1'],
+                ['1:00:00', '60'],
+                ['10:00', '10'],
+            ]
+        ));
+        
+        manager.addTask(new WallSurviveTimer.TimerTask(
+            WallSurviveTimer.EnemyType.WARNING,
+            [
+                ['1:00', '1.0'],
+                ['1:00:11', '60.1'],
+                ['10:11', '10.1'],
+            ]
+        ));
+
+        manager.forwardSync(WallSurviveTimer.TimeConverter.str2num('10:00'));
+
+        const result = manager.getTaskList();
+
+        this.assert(result[0].getEventName() == '10');
+        this.assert(result[1].getEventName() == '10.1');
+    }
+}
+
 Testable.errorClass = WallSurviveTimer.TimerError;
 Tester.run([
     TimerTest,
     TimeConverterTest,
     TimerTaskTest,
     HeapTest,
+    TimerTaskManagerTest,
 ]);

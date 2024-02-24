@@ -20,6 +20,13 @@ export namespace WallSurviveTimer {
             [EnemyType.WARNING, [['19:00', '대공경보']]],
             [EnemyType.WARNING, [['39:00', '공중 유닛 증가']]],
         ];
+
+        static makeTimerTaskManager(): TimerTaskManager {
+            const retval = new TimerTaskManager();
+            for (const [type, rawData] of this.data)
+                retval.addTask(new TimerTask(type, rawData));
+            return retval;
+        }
     }
 
     export class TimeConverter {
@@ -135,8 +142,35 @@ export namespace WallSurviveTimer {
             this.value = [];
         }
 
+        getTaskList(): TimerTask[] {
+            return this.value.map(x => x);
+        }
+
         addTask(task: TimerTask): void {
             this.value.push(task);
+            this.sortTasks();
+        }
+
+        sync(time: Time): void {
+            for (const task of this.value)
+                task.sync(time);
+            this.sortTasks();
+        }
+
+        forwardSync(time: Time): void {
+            while (true) {
+                const task = this.value[0];
+
+                if (!((task.getEventTime() ?? Infinity) < time))
+                    break;
+
+                task.pop();
+                this.sortTasks();
+            }
+        }
+
+        sortTasks(): void {
+            this.value.sort((a, b) => (a.getEventTime() ?? Infinity) - (b.getEventTime() ?? Infinity));
         }
     }
 
