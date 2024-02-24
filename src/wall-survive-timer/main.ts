@@ -25,42 +25,75 @@ export namespace WallSurviveTimer {
     }
 
     export class TimerTask {
-        type: EnemyType;
-        timeline: EventData[];
+        private type: EnemyType;
+        private timeline: EventData[];
+        private idx: number;
 
-        constructor(type: EnemyType, timeline: RawEventData[]) {
+        public constructor(type: EnemyType, timeline: RawEventData[]) {
             this.type = type;
             this.timeline = timeline.map((x) => TimerTask.convertToEventData(x));
-
             this.timeline.sort((a, b) => a[0] - b[0]);
+            this.idx = 0;
         }
 
         private static convertToEventData(raw: RawEventData): EventData {
             return [TimeConverter.str2num(raw[0]), raw[1]];
         }
 
-        getEventTime(): GameTime | null {
-            if (!(0 < this.timeline.length))
-                return null;
-            return this.timeline[0][0];
+        public getEnemyType(): EnemyType {
+            return this.type;
         }
 
-        getEventName(): string | null {
-            if (!(0 < this.timeline.length))
+        public getEventTime(): GameTime | null {
+            if (!(this.idx < this.timeline.length))
                 return null;
-            return this.timeline[0][1];
+            return this.timeline[this.idx][0];
         }
 
-        getNextEventTime(): GameTime | null {
-            if (!(1 < this.timeline.length))
+        public getEventName(): string | null {
+            if (!(this.idx < this.timeline.length))
                 return null;
-            return this.timeline[1][0];
+            return this.timeline[this.idx][1];
         }
 
-        getNextEventName(): string | null {
-            if (!(1 < this.timeline.length))
+        public getNextEventTime(): GameTime | null {
+            if (!(this.idx + 1 < this.timeline.length))
                 return null;
-            return this.timeline[1][1];
+            return this.timeline[this.idx + 1][0];
+        }
+
+        public getNextEventName(): string | null {
+            if (!(this.idx + 1 < this.timeline.length))
+                return null;
+            return this.timeline[this.idx + 1][1];
+        }
+
+        public pop(): boolean {
+            if (!(this.idx < this.timeline.length))
+                return false;
+
+            this.idx++;
+            return true;
+        }
+
+        public clear(): void {
+            this.idx = 0;
+        }
+
+        public sync(time: GameTime): void {
+            this.clear();
+
+            let s = 0, e = this.timeline.length, m = 0;
+            while (s < e) {
+                m = Math.floor((s + e) / 2);
+
+                if (this.timeline[m][0] < time)
+                    s = m + 1;
+                else
+                    e = m;
+            }
+
+            this.idx = e;
         }
     }
 

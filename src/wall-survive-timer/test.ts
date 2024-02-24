@@ -118,6 +118,61 @@ class TimerTaskTest extends Testable {
         this.assert(task.getNextEventTime() === null);
         this.assert(task.getNextEventName() === null);
     }
+
+    static test_pop(): void {
+        const task = new WallSurviveTimer.TimerTask(
+            WallSurviveTimer.EnemyType.BOSS,
+            [
+                ['1:02', '1'],
+                ['1:03', '2'],
+            ]
+        );
+
+        this.assert(task.pop() === true);
+        this.assert(task.getEventName() == '2');
+    }
+
+    static test_pop_실패(): void {
+        const task = new WallSurviveTimer.TimerTask(
+            WallSurviveTimer.EnemyType.BOSS,
+            [
+            ]
+        );
+
+        this.assert(task.pop() === false);
+    }
+
+    static test_clear(): void {
+        const task = new WallSurviveTimer.TimerTask(
+            WallSurviveTimer.EnemyType.BOSS,
+            [
+                ['1:02:03', '3'],
+                ['1:02', '1'],
+                ['1:03', '2'],
+            ]
+        );
+
+        task.pop();
+        task.pop();
+        task.clear();
+
+        this.assert(task.getEventName() == '1');
+    }
+
+    static test_sync(): void {
+        const task = new WallSurviveTimer.TimerTask(
+            WallSurviveTimer.EnemyType.BOSS,
+            [
+                ['1:04', '3'],
+                ['1:02', '1'],
+                ['1:03', '2'],
+            ]
+        );
+
+        task.sync(WallSurviveTimer.TimeConverter.str2num('1:03'));
+
+        this.assert(task.getEventName() == '2');
+    }
 }
 
 Testable.errorClass = WallSurviveTimer.TimerError;
