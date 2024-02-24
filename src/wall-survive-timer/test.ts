@@ -221,5 +221,5 @@ Tester.run([
     TimerTest,
     TimeConverterTest,
     TimerTaskTest,
-    HeapTest, 
+    HeapTest,
 ]);
