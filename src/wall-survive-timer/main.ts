@@ -24,15 +24,46 @@ export namespace WallSurviveTimer {
         ];
     }
 
+    export class TimeConverter {
+        public static str2num(str: string): GameTime {
+            try {
+                const result = str.split(':').reduce((a, x) => a * 60 + parseInt(x), 0);
+                if (isNaN(result))
+                    return TimerError.InvalidTimeString(str);
+                return result;
+            } catch (e) {
+                TimerError.InvalidTimeString(str);
+            }
+        }
+
+        public static num2str(num: GameTime): string {
+            const arr = [0, 0, 0];
+            arr[2] = num % 60;
+            arr[1] = Math.floor(num % 3600 / 60);
+            arr[0] = Math.floor(num / 3600);
+
+            if (arr[0])
+                return `${arr[0]}:${this.padSize(arr[1])}:${this.padSize(arr[2])}`;
+            return `${arr[1]}:${this.padSize(arr[2])}`;
+        }
+
+        private static padSize(num: number): string {
+            return num.toString().padStart(2, '0');
+        }
+    }
+
     export class TimerTask {
         private type: EnemyType;
+
         private timeline: EventData[];
         private idx: number;
 
         public constructor(type: EnemyType, timeline: RawEventData[]) {
             this.type = type;
+
             this.timeline = timeline.map((x) => TimerTask.convertToEventData(x));
             this.timeline.sort((a, b) => a[0] - b[0]);
+
             this.idx = 0;
         }
 
@@ -97,32 +128,8 @@ export namespace WallSurviveTimer {
         }
     }
 
-    export class TimeConverter {
-        public static str2num(str: string): GameTime {
-            try {
-                const result = str.split(':').reduce((a, x) => a * 60 + parseInt(x), 0);
-                if (isNaN(result))
-                    return TimerError.InvalidTimeString(str);
-                return result;
-            } catch (e) {
-                TimerError.InvalidTimeString(str);
-            }
-        }
-
-        public static num2str(num: GameTime): string {
-            const arr = [0, 0, 0];
-            arr[2] = num % 60;
-            arr[1] = Math.floor(num % 3600 / 60);
-            arr[0] = Math.floor(num / 3600);
-
-            if (arr[0])
-                return `${arr[0]}:${this.padSize(arr[1])}:${this.padSize(arr[2])}`;
-            return `${arr[1]}:${this.padSize(arr[2])}`;
-        }
-
-        private static padSize(num: number): string {
-            return num.toString().padStart(2, '0');
-        }
+    export class TimerTaskManager {
+        // TODO : TimerTask 들의 순서를 관리하고, 출력을 위탁하는 형태로 구성 
     }
 
     export class Timer {
@@ -139,7 +146,7 @@ export namespace WallSurviveTimer {
             this.speed = 1.44;
             if (speed !== undefined)
                 this.speed = speed;
-            
+
             this.startTime = null;
             this.passedTime = 0;
 
@@ -150,10 +157,6 @@ export namespace WallSurviveTimer {
             this.startTime = new Date().getTime();
             this.passedTime = 0;
             this.startProc();
-        }
-
-        private isRunningProc(): boolean {
-            return this.intervalValue !== null;
         }
 
         private startProc(): void {
@@ -172,10 +175,6 @@ export namespace WallSurviveTimer {
                 TimerError.startTimeIsNull();
 
             this.passedTime = new Date().getTime() - this.startTime;
-            this.run(this.passedTime);
-        }
-
-        private run(passedTime: Time): void {
             // Do Something;
         }
 
@@ -207,15 +206,15 @@ export namespace WallSurviveTimer {
     }
 
     export class TimerError extends Error {
-        static InvalidTimeString(str: string): never {
+        public static InvalidTimeString(str: string): never {
             throw new TimerError(`${str}은 시간을 나타내는 문자열이 아닙니다.`);
         }
 
-        static noRunningTimer(): never {
+        public static noRunningTimer(): never {
             throw new TimerError("타이머가 실행중이지 않습니다.");
         }
 
-        static startTimeIsNull(): never {
+        public static startTimeIsNull(): never {
             throw new TimerError(`startTime이 null인 상태로 기능을 수행할 수 없습니다.`);
         }
     }
