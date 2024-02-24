@@ -6,7 +6,7 @@ export namespace WallSurviveTimer {
 
     type GameTime = number;
 
-    enum EnemyType {
+    export enum EnemyType {
         WARNING = 0,
         BOSS = 1,
     }
@@ -24,19 +24,48 @@ export namespace WallSurviveTimer {
         ];
     }
 
-    class TimerTask {
+    export class TimerTask {
         type: EnemyType;
         timeline: EventData[];
 
         constructor(type: EnemyType, timeline: RawEventData[]) {
             this.type = type;
-            throw "TODO !!!!!!!!!"
-            // this.timeline = 123123123;
+            this.timeline = timeline.map((x) => TimerTask.convertToEventData(x));
+
+            this.timeline.sort((a, b) => a[0] - b[0]);
+        }
+
+        private static convertToEventData(raw: RawEventData): EventData {
+            return [TimeConverter.str2num(raw[0]), raw[1]];
+        }
+
+        getEventTime(): GameTime | null {
+            if (!(0 < this.timeline.length))
+                return null;
+            return this.timeline[0][0];
+        }
+
+        getEventName(): string | null {
+            if (!(0 < this.timeline.length))
+                return null;
+            return this.timeline[0][1];
+        }
+
+        getNextEventTime(): GameTime | null {
+            if (!(1 < this.timeline.length))
+                return null;
+            return this.timeline[1][0];
+        }
+
+        getNextEventName(): string | null {
+            if (!(1 < this.timeline.length))
+                return null;
+            return this.timeline[1][1];
         }
     }
 
     export class TimeConverter {
-        static str2num(str: string): GameTime {
+        public static str2num(str: string): GameTime {
             try {
                 const result = str.split(':').reduce((a, x) => a * 60 + parseInt(x), 0);
                 if (isNaN(result))
@@ -47,7 +76,7 @@ export namespace WallSurviveTimer {
             }
         }
 
-        static num2str(num: GameTime): string {
+        public static num2str(num: GameTime): string {
             const arr = [0, 0, 0];
             arr[2] = num % 60;
             arr[1] = Math.floor(num % 3600 / 60);
@@ -58,7 +87,7 @@ export namespace WallSurviveTimer {
             return `${arr[1]}:${this.padSize(arr[2])}`;
         }
 
-        static padSize(num: number): string {
+        private static padSize(num: number): string {
             return num.toString().padStart(2, '0');
         }
     }
@@ -110,9 +139,11 @@ export namespace WallSurviveTimer {
                 TimerError.startTimeIsNull();
 
             this.passedTime = new Date().getTime() - this.startTime;
+            this.run(this.passedTime);
+        }
 
-            // DO SOMETHING
-            // console.log(this.startTime, this.passedTime);
+        private run(passedTime: Time): void {
+            // Do Something;
         }
 
         public pause(): void {
