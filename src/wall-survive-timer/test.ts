@@ -1,5 +1,5 @@
 import { Testable, Tester } from '../../test';
-import { WallSurviveTimer, DataStructure } from './main';
+import { WallSurviveTimer } from './main';
 
 class TimerTest extends Testable {
     static test_시작하지_않고_일시정지_에러(): void {
@@ -196,25 +196,6 @@ class TimerTaskTest extends Testable {
     }
 }
 
-class HeapTest extends Testable {
-    static test_heap_기본(): void {
-        const pq = new DataStructure.Heap<number, number>();
-
-        pq.push(3, 3);
-        pq.push(5, 5);
-        pq.push(1, 1);
-        pq.push(2, 2);
-        pq.push(4, 4);
-
-        for (let i = 1; i <= 5; i++) {
-            this.assert(pq.topKey() == i);
-            this.assert(pq.pop() === true);
-        }
-
-        this.assert(pq.pop() === false);
-    }
-}
-
 class TimerTaskManagerTest extends Testable {
     static test_생성(): void {
         const manager = new WallSurviveTimer.TimerTaskManager();
@@ -307,6 +288,5 @@ Tester.run([
     TimerTest,
     TimeConverterTest,
     TimerTaskTest,
-    HeapTest,
     TimerTaskManagerTest,
 ]);
