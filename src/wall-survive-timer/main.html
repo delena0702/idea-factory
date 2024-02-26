@@ -4,9 +4,183 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>벽짓살 타이머</title>
+    <link href="../../node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="main.js"></script>
     <script src="runner.js"></script>
+
+    <style>
+        * {
+            --timeline-bar-height: 30px;
+        }
+
+        .timeline-bar {
+            height: var(--timeline-bar-height);
+        }
+
+        pre {
+            display: inline;
+            border: 1px solid blueviolet;
+        }
+
+        .boss-tag > span:first-child {
+            border-left: 0!important;
+        }
+    </style>
 </head>
 <body>
+    <!-- 타임라인 -->
+    <div class="container position-relative">
+        <div class="timeline-bar">
+            <!-- 위쪽 여백 -->
+        </div>
+
+        <div class="progress" role="progressbar">
+            <!-- 막대 -->
+            <div class="progress-bar text-bg-primary" style="width: 15%;"></div>
+        </div>
+
+        <div class="timeline-bar d-flex justify-content-between">
+            <!-- 타임라인의 시작 시간 / 끝 시간 -->
+            <p class="lead">12:13</p>
+            <p class="lead">42:13</p>
+        </div>
+
+        <div class="position-absolute top-0 start-0 end-0 timeline-bar">
+            <!-- 위쪽 타임바 -->
+            <div style="left:7%;" class="position-absolute">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="30" fill="#2468ac88" viewBox="0 0 32 48">
+                    <path d="M0.5 0.5H31.5V31.7929L16 47.2929L0.5 31.7929V0.5Z" stroke=""/>
+                </svg>
+            </div>
+            <div style="left:78%;" class="position-absolute">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="30" fill="#2468ac88" viewBox="0 0 32 48">
+                    <path d="M0.5 0.5H31.5V31.7929L16 47.2929L0.5 31.7929V0.5Z" stroke=""/>
+                </svg>
+            </div>
+        </div>
+
+        <div class="position-absolute bottom-0 start-0 end-0 timeline-bar">
+            <!-- 아래쪽 타임바 -->
+            <div style="left:36%;" class="position-absolute">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="30" fill="#2468ac88" viewBox="0 0 32 48">
+                    <path d="M0.5 47.5H31.5V16.2071L16 0.707108L0.5 16.2071V47.5Z" stroke=""/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- 메인 시간 확인 공간 -->
+    <div class="container">
+        <!-- 시간 출력 -->
+        <div class="row">
+            <div class="d-flex w-100 justify-content-center align-items-center">
+                <p class="my-3 display-1">12:13.0</p>
+            </div>
+        </div>
+
+        <!-- 시간 이동 UI -->
+        <div class="row align-items-center">
+            <div class="col-3 col-sm-2 text-center p-1">
+                <button type="button" class="btn btn-primary w-100 px-0">-10</button>
+            </div>
+            <div class="col-3 col-sm-2 text-center p-1">
+                <button type="button" class="btn btn-primary w-100 px-0">-1</button>
+            </div>
+            <div class="col-3 col-sm-2 text-center p-1">
+                <button type="button" class="btn btn-primary w-100 px-0">+1</button>
+            </div>
+            <div class="col-3 col-sm-2 text-center p-1">
+                <button type="button" class="btn btn-primary w-100 px-0">+10</button>
+            </div>
+
+            <div class="col-12 col-sm-4 p-1">
+                <div class="input-group input-group-sm w-auto">
+                    <input type="text" class="form-control text-center" placeholder="00:00">
+                    <span class="input-group-text" role="button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-skip-end" viewBox="0 0 16 16">
+                            <path d="M12.5 4a.5.5 0 0 0-1 0v3.248L5.233 3.612C4.713 3.31 4 3.655 4 4.308v7.384c0 .653.713.998 1.233.696L11.5 8.752V12a.5.5 0 0 0 1 0zM5 4.633 10.804 8 5 11.367z"/>
+                        </svg>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 각 이벤트 확인 뷰 -->
+    <div class="container my-3">
+        <!-- 전조 선택 전 -->
+        <div class="row border">
+            <div class="col-12 text-center">
+                <p class="d-inline lead">20:24</p>
+                <p class="d-inline text-body-secondary"><small>(-12:34)</small></p>
+            </div>
+
+            <div class="col-6 p-2 text-center" role="button">
+                <div class="row justify-content-center align-items-center">
+                    <p class="col-12 col-md-5"><small>공생축</small></p>
+                    <p class="d-none d-md-block col-md-1">→</p>
+                    <p class="col-12 col-md-6 lead">군단숙주</p>
+                    <div class="col-12 boss-tag d-flex flex-wrap justify-content-center">
+                        <span class="mx-1 badge rounded-pill text-black bg-secondary-subtle">지상</span>
+                        <span class="mx-1 badge rounded-pill text-black bg-secondary-subtle">공중</span>
+                        <span class="mx-1 badge rounded-pill text-black bg-secondary-subtle">중장갑</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 p-2 border-start text-center" role="button">
+                <div class="row justify-content-center align-items-center">
+                    <p class="col-12 col-md-5"><small>식충</small></p>
+                    <p class="d-none d-md-block col-md-1">→</p>
+                    <p class="col-12 col-md-6 lead">촉수형제</p>
+                    <div class="col-12 boss-tag d-flex flex-wrap justify-content-center">
+                        <span class="mx-1 badge rounded-pill text-black bg-secondary-subtle">지상</span>
+                        <span class="mx-1 badge rounded-pill text-black bg-secondary-subtle">중장갑</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 전조 선택 후 -->
+        <div class="row border">
+            <div class="col-12 col-md-2 text-center">
+                <div class="d-flex flex-wrap justify-content-center align-items-center h-100">
+                    <div class="mx-2">
+                        <p class="d-inline lead">40:48</p>
+                        <p class="d-inline text-body-secondary"><small>(-1:23:34)</small></p>
+                    </div>
+                    <div class="mx-2 text-nowrap" style="background-color: lime;">
+                        남은 수급 : 12
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-9 col-md-7 p-2 text-center">
+                <div class="row justify-content-center align-items-center">
+                    <p class="col-12 col-md-5"><small>방사능 미친개</small></p>
+                    <p class="d-none d-md-block col-md-1">→</p>
+                    <p class="col-12 col-md-6 lead">살모사</p>
+                    <div class="col-12 boss-tag d-flex flex-wrap justify-content-center">
+                        <span class="mx-1 badge rounded-pill text-black bg-secondary-subtle">지상</span>
+                        <span class="mx-1 badge rounded-pill text-black bg-secondary-subtle">공중</span>
+                        <span class="mx-1 badge rounded-pill text-black bg-secondary-subtle">중장갑</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background-color: lime;" class="col-3 col-md-3 text-center">
+                <div class="row">
+                    <div>[보스 변경]</div>
+                    <p class="col-12">오메가리스크</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 경고 발생 종료 -->
+        <div>
+
+        </div>
+    </div>
+    <script src="../../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
