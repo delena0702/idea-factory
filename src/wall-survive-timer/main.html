@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,11 +23,12 @@
             border: 1px solid blueviolet;
         }
 
-        .boss-tag > span:first-child {
-            border-left: 0!important;
+        .boss-tag>span:first-child {
+            border-left: 0 !important;
         }
     </style>
 </head>
+
 <body>
     <!-- 타임라인 -->
     <div class="container position-relative">
@@ -49,12 +51,12 @@
             <!-- 위쪽 타임바 -->
             <div style="left:7%;" class="position-absolute">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="30" fill="#2468ac88" viewBox="0 0 32 48">
-                    <path d="M0.5 0.5H31.5V31.7929L16 47.2929L0.5 31.7929V0.5Z" stroke=""/>
+                    <path d="M0.5 0.5H31.5V31.7929L16 47.2929L0.5 31.7929V0.5Z" stroke="" />
                 </svg>
             </div>
             <div style="left:78%;" class="position-absolute">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="30" fill="#2468ac88" viewBox="0 0 32 48">
-                    <path d="M0.5 0.5H31.5V31.7929L16 47.2929L0.5 31.7929V0.5Z" stroke=""/>
+                    <path d="M0.5 0.5H31.5V31.7929L16 47.2929L0.5 31.7929V0.5Z" stroke="" />
                 </svg>
             </div>
         </div>
@@ -63,7 +65,7 @@
             <!-- 아래쪽 타임바 -->
             <div style="left:36%;" class="position-absolute">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="30" fill="#2468ac88" viewBox="0 0 32 48">
-                    <path d="M0.5 47.5H31.5V16.2071L16 0.707108L0.5 16.2071V47.5Z" stroke=""/>
+                    <path d="M0.5 47.5H31.5V16.2071L16 0.707108L0.5 16.2071V47.5Z" stroke="" />
                 </svg>
             </div>
         </div>
@@ -97,8 +99,10 @@
                 <div class="input-group input-group-sm w-auto">
                     <input type="text" class="form-control text-center" placeholder="00:00">
                     <span class="input-group-text" role="button">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-skip-end" viewBox="0 0 16 16">
-                            <path d="M12.5 4a.5.5 0 0 0-1 0v3.248L5.233 3.612C4.713 3.31 4 3.655 4 4.308v7.384c0 .653.713.998 1.233.696L11.5 8.752V12a.5.5 0 0 0 1 0zM5 4.633 10.804 8 5 11.367z"/>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor"
+                            class="bi bi-skip-end" viewBox="0 0 16 16">
+                            <path
+                                d="M12.5 4a.5.5 0 0 0-1 0v3.248L5.233 3.612C4.713 3.31 4 3.655 4 4.308v7.384c0 .653.713.998 1.233.696L11.5 8.752V12a.5.5 0 0 0 1 0zM5 4.633 10.804 8 5 11.367z" />
                         </svg>
                     </span>
                 </div>
@@ -110,12 +114,12 @@
     <div class="container my-3">
         <!-- 전조 선택 전 -->
         <div class="row border">
-            <div class="col-12 text-center">
+            <div class="col-12 col-md-2 text-center my-auto p-3">
                 <p class="d-inline lead">20:24</p>
                 <p class="d-inline text-body-secondary"><small>(-12:34)</small></p>
             </div>
 
-            <div class="col-6 p-2 text-center" role="button">
+            <div class="col-6 col-md-5 p-3 text-center" role="button">
                 <div class="row justify-content-center align-items-center">
                     <p class="col-12 col-md-5"><small>공생축</small></p>
                     <p class="d-none d-md-block col-md-1">→</p>
@@ -128,7 +132,7 @@
                 </div>
             </div>
 
-            <div class="col-6 p-2 border-start text-center" role="button">
+            <div class="col-6 col-md-5 p-3 text-center" role="button">
                 <div class="row justify-content-center align-items-center">
                     <p class="col-12 col-md-5"><small>식충</small></p>
                     <p class="d-none d-md-block col-md-1">→</p>
@@ -143,19 +147,19 @@
 
         <!-- 전조 선택 후 -->
         <div class="row border">
-            <div class="col-12 col-md-2 text-center">
+            <div class="col-12 col-md-2 text-center p-3">
                 <div class="d-flex flex-wrap justify-content-center align-items-center h-100">
                     <div class="mx-2">
                         <p class="d-inline lead">40:48</p>
                         <p class="d-inline text-body-secondary"><small>(-1:23:34)</small></p>
                     </div>
-                    <div class="mx-2 text-nowrap" style="background-color: lime;">
+                    <div class="mx-2 text-nowrap">
                         남은 수급 : 12
                     </div>
                 </div>
             </div>
 
-            <div class="col-9 col-md-7 p-2 text-center">
+            <div class="col-9 col-md-7 p-3 text-center">
                 <div class="row justify-content-center align-items-center">
                     <p class="col-12 col-md-5"><small>방사능 미친개</small></p>
                     <p class="d-none d-md-block col-md-1">→</p>
@@ -168,19 +172,54 @@
                 </div>
             </div>
 
-            <div style="background-color: lime;" class="col-3 col-md-3 text-center">
-                <div class="row">
-                    <div>[보스 변경]</div>
+            <div class="col-3 col-md-3 p-3 text-center" role="button">
+                <div class="h-100 d-flex flex-column justify-content-center align-items-center">
+                    <div>→</div>
                     <p class="col-12">오메가리스크</p>
                 </div>
             </div>
         </div>
 
         <!-- 경고 발생 종료 -->
-        <div>
-
+        <div class="row border">
+            <div class="col-12 d-flex p-3">
+                <div class="m-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor"
+                        viewBox="0 0 160 160">
+                        <path
+                            d="M140 20L136.667 43.3333L63.3333 116.667L73.3333 126.667L60 140L46.6667 126.667L26.6667 146.667L13.3333 133.333L33.3333 113.333L20 100L33.3333 86.6667L43.3333 96.6667L116.667 23.3333L140 20Z" />
+                        <path
+                            d="M20 20L43.3334 23.3333L116.667 96.6667L126.667 86.6667L140 100L126.667 113.333L146.667 133.333L133.333 146.667L113.333 126.667L100 140L86.6667 126.667L96.6667 116.667L23.3334 43.3333L20 20Z" />
+                    </svg>
+                </div>
+                <div class="flex-grow-1 my-auto">
+                    <p class="m-0 text-center display-6">브루탈리스크</p>
+                </div>
+            </div>
         </div>
+
+        <!-- 경고 발생 종료 (미선택) -->
+        <div class="row border">
+            <div class="col-12 d-flex p-3">
+                <div class="m-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor"
+                        viewBox="0 0 160 160">
+                        <path
+                            d="M140 20L136.667 43.3333L63.3333 116.667L73.3333 126.667L60 140L46.6667 126.667L26.6667 146.667L13.3333 133.333L33.3333 113.333L20 100L33.3333 86.6667L43.3333 96.6667L116.667 23.3333L140 20Z" />
+                        <path
+                            d="M20 20L43.3334 23.3333L116.667 96.6667L126.667 86.6667L140 100L126.667 113.333L146.667 133.333L133.333 146.667L113.333 126.667L100 140L86.6667 126.667L96.6667 116.667L23.3334 43.3333L20 20Z" />
+                    </svg>
+                </div>
+                <div class="flex-grow-1 my-auto">
+                    <p class="m-0 text-center display-6">브루탈리스크</p>
+                    <p class="m-0 text-center lead w-100">or</p>
+                    <p class="m-0 text-center display-6">루탈이 친구</p>
+                </div>
+            </div>
+        </div>
+
     </div>
     <script src="../../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
