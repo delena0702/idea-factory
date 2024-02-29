@@ -31,7 +31,8 @@
 </head>
 
 <body>
-    <div id="template-container" class="d-none">
+    <!-- 타임라인 -->
+    <div id="timeline" class="container position-relative">
         <div id="template-up-mark" class="position-absolute">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="30" fill="currentColor" viewBox="0 0 32 48">
                 <path d="M0.5 0.5H31.5V31.7929L16 47.2929L0.5 31.7929V0.5Z" stroke="" />
@@ -43,10 +44,7 @@
                 <path d="M0.5 47.5H31.5V16.2071L16 0.707108L0.5 16.2071V47.5Z" stroke="" />
             </svg>
         </div>
-    </div>
 
-    <!-- 타임라인 -->
-    <div id="timeline" class="container position-relative">
         <div class="timeline-bar">
             <!-- 위쪽 여백 -->
         </div>
@@ -71,34 +69,40 @@
         </div>
     </div>
 
+    <!-- =============================================== -->
+    <!-- =============================================== -->
+    <!-- =============================================== -->
+    <!-- =============================================== -->
+    <!-- =============================================== -->
+
     <!-- 메인 시간 확인 공간 -->
-    <div class="container">
+    <div id="time-panel" class="container">
         <!-- 시간 출력 -->
         <div class="row">
             <div class="d-flex w-100 justify-content-center align-items-center">
-                <p class="my-3 display-1">12:13.0</p>
+                <p id="output-time" class="my-3 display-1">12:13.0</p>
             </div>
         </div>
 
         <!-- 시간 이동 UI -->
         <div class="row align-items-center">
             <div class="col-3 col-sm-2 text-center p-1">
-                <button type="button" class="btn btn-primary w-100 px-0">-10</button>
+                <button id="btn-1" type="button" class="btn btn-primary w-100 px-0">-10</button>
             </div>
             <div class="col-3 col-sm-2 text-center p-1">
-                <button type="button" class="btn btn-primary w-100 px-0">-1</button>
+                <button id="btn-2" type="button" class="btn btn-primary w-100 px-0">-1</button>
             </div>
             <div class="col-3 col-sm-2 text-center p-1">
-                <button type="button" class="btn btn-primary w-100 px-0">+1</button>
+                <button id="btn-3" type="button" class="btn btn-primary w-100 px-0">+1</button>
             </div>
             <div class="col-3 col-sm-2 text-center p-1">
-                <button type="button" class="btn btn-primary w-100 px-0">+10</button>
+                <button id="btn-4" type="button" class="btn btn-primary w-100 px-0">+10</button>
             </div>
 
             <div class="col-12 col-sm-4 p-1">
                 <div class="input-group input-group-sm w-auto">
-                    <input type="text" class="form-control text-center" placeholder="00:00">
-                    <span class="input-group-text" role="button">
+                    <input id="input-time" type="text" class="form-control text-center" placeholder="00:00">
+                    <span id="btn-skip" class="input-group-text" role="button">
                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor"
                             class="bi bi-skip-end" viewBox="0 0 16 16">
                             <path
@@ -109,6 +113,12 @@
             </div>
         </div>
     </div>
+
+    <!-- =============================================== -->
+    <!-- =============================================== -->
+    <!-- =============================================== -->
+    <!-- =============================================== -->
+    <!-- =============================================== -->
 
     <!-- 각 이벤트 확인 뷰 -->
     <div class="container my-3">
