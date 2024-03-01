@@ -54,6 +54,12 @@ namespace WallSurviveTimer {
             return `${arr[1]}:${this.padZero(arr[2])}`;
         }
 
+        public static diffNum2str(num: Time): string {
+            if (num >= 0)
+                return `+${this.num2str(num)}`;
+            return `-${this.num2str(-num)}`;
+        }
+
         private static padZero(num: number): string {
             return num.toString().padStart(2, '0');
         }
