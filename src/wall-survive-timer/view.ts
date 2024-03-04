@@ -1,9 +1,4 @@
 namespace WallSurviveTimerView {
-    interface TimeSyncable {
-        syncTime(time: number): void;
-        setStartEndTime(startTime: number, endTime: number): void;
-    }
-
     class DOMManager {
         private parent: HTMLElement;
         private domCollection: { [key: string]: HTMLElement };
@@ -39,13 +34,13 @@ namespace WallSurviveTimerView {
         }
     }
 
-    type MarkType = 0 | 1 | 2;
+    enum TimelineMarkType {
+        WARNING = 0,
+        // PREDICT = 1,
+        BOSS = 2,
+    }
 
-    export class TimelineViewBinder implements TimeSyncable {
-        static readonly WARNING = 0;
-        static readonly PREDICT = 1;
-        static readonly BOSS = 2;
-
+    export class TimelineViewBinder {
         static readonly KEYS: { [key: string]: string } = {
             START_TIME: 'start-time',
             END_TIME: 'end-time',
@@ -105,34 +100,31 @@ namespace WallSurviveTimerView {
             endTimeDOM.textContent = WallSurviveTimer.TimeConverter.num2str(endTime);
         }
 
-        setEnemyInfo(info: [number, MarkType][]): void {
+        setEnemyInfo(info: [number, TimelineMarkType][]): void {
             for (const [time, markType] of info)
                 this.setMark(time, markType);
         }
 
-        setMark(time: number, markType: MarkType): void {
+        setMark(time: number, markType: TimelineMarkType): void {
             const { UP_MARK, DOWN_MARK, UP_MARK_BAR, DOWN_MARK_BAR } = TimelineViewBinder.KEYS;
 
-            if (markType == TimelineViewBinder.PREDICT) {
+            if (markType == TimelineMarkType.BOSS) {
                 const element = this.domManager.cloneDOM(UP_MARK);
                 element.style.left = `${this.getRatio(time)}%`;
-                element.children[0].setAttribute('fill', '#4BE3BF');
+                element.children[0].setAttribute('fill', '#E42D2D');
                 this.domManager.getDOM(UP_MARK_BAR).appendChild(element);
             }
 
             else {
                 const element = this.domManager.cloneDOM(DOWN_MARK);
                 element.style.left = `${this.getRatio(time)}%`;
-                if (markType == TimelineViewBinder.WARNING)
-                    element.children[0].setAttribute('fill', '#F6B610');
-                else
-                    element.children[0].setAttribute('fill', '#E42D2D');
+                element.children[0].setAttribute('fill', '#F6B610');
                 this.domManager.getDOM(DOWN_MARK_BAR).appendChild(element);
             }
         }
     }
 
-    export class TimePanelViewBinder implements TimeSyncable {
+    export class TimePanelViewBinder {
         static readonly KEYS: { [key: string]: string } = {
             OUTPUT_TIME: "output-time",
             BTN_1: "btn-1",
@@ -241,7 +233,7 @@ namespace WallSurviveTimerView {
     type ScheduleRowInfo = [string, string, string[]][];
     type ScheduleTime = [number, number, number];
 
-    export class ScheduleRowViewBinder implements TimeSyncable {
+    export class ScheduleRowViewBinder {
         static readonly KEYS = {
             PREDICT_NO_SELECT: 'template-predict-no-select',
             PREDICT_SELECT: 'template-predict-select',
@@ -316,21 +308,21 @@ namespace WallSurviveTimerView {
                     binder.selected = 1;
                     binder.setMode(ScheduleRowMode.PREDICT_SELECT);
                 };
-            } catch (e) {}
+            } catch (e) { }
 
             try {
                 this.rowDomManager.getDOM(ScheduleRowViewBinder.ROW_KEYS.SELECT_2).onclick = () => {
                     binder.selected = 2;
                     binder.setMode(ScheduleRowMode.PREDICT_SELECT);
                 };
-            } catch (e) {}
+            } catch (e) { }
 
             try {
                 this.rowDomManager.getDOM(ScheduleRowViewBinder.ROW_KEYS.SELECT_CHANGE).onclick = () => {
                     binder.selected = (binder.selected == 2) ? 1 : 2;
                     binder.setMode(ScheduleRowMode.PREDICT_SELECT);
                 };
-            } catch (e) {}
+            } catch (e) { }
         }
 
         setUpdateListener(callback: (time: number) => void): void {
@@ -347,29 +339,26 @@ namespace WallSurviveTimerView {
             const { TEXT_TIME, TEXT_TIME_REMAIN } = ScheduleRowViewBinder.ROW_KEYS;
             const binder = this;
 
-            if (this.time < this.targetTime[0]) {
+            if (this.time < this.targetTime[0] || this.time > this.targetTime[2]) {
                 if (this.isDisplay())
                     this.setDisplay(false);
                 return;
             }
 
-            if (this.time > this.targetTime[2]) {
-                if (!this.isDisplay())
-                    return;
-
-                this.setDisplay(false);
-                this.moveToBottom();
-                return;
-            }
-            
             if (!this.isDisplay())
                 this.setDisplay(true);
 
             if (this.time >= this.targetTime[1]) {
                 if (this.mode == ScheduleRowMode.PREDICT_NO_SELECT)
-                    this.setMode(ScheduleRowMode.BOSS_NO_SELECT)
+                    this.setMode(ScheduleRowMode.BOSS_NO_SELECT);
                 if (this.mode == ScheduleRowMode.PREDICT_SELECT)
-                    this.setMode(ScheduleRowMode.BOSS_SELECT)
+                    this.setMode(ScheduleRowMode.BOSS_SELECT);
+            }
+            else {
+                if (this.mode == ScheduleRowMode.BOSS_NO_SELECT)
+                    this.setMode(ScheduleRowMode.PREDICT_NO_SELECT);
+                if (this.mode == ScheduleRowMode.BOSS_SELECT)
+                    this.setMode(ScheduleRowMode.PREDICT_SELECT);
             }
 
             try {
@@ -383,10 +372,6 @@ namespace WallSurviveTimerView {
             } catch (e) { }
         }
 
-        moveToBottom() {
-            this.parent.parentElement?.appendChild(this.parent);
-        }
-
         isDisplay(): boolean {
             return this.display;
         }
@@ -395,9 +380,9 @@ namespace WallSurviveTimerView {
             this.display = flag;
 
             if (flag)
-                this.parent.style.visibility = 'visible';
+                this.parent.style.display = 'block';
             else
-                this.parent.style.visibility = 'collapse';
+                this.parent.style.display = 'none';
         }
 
         syncText(): void {
@@ -430,9 +415,6 @@ namespace WallSurviveTimerView {
             this.update();
         }
 
-        setStartEndTime(startTime: number, endTime: number): void {
-        }
-
         setMode(mode: ScheduleRowMode): void {
             this.mode = mode;
 
@@ -457,14 +439,14 @@ namespace WallSurviveTimerView {
             this.syncText();
         }
     }
-    
+
     type ScheduleRowData = [
         WallSurviveTimer.EnemyType,
         ScheduleTime,
         ScheduleRowInfo
-    ][];
+    ];
 
-    export class SchedulTableViewBinder implements TimeSyncable {
+    export class ScheduleTableViewBinder {
         static readonly KEYS = {
             SCHEDULE_ROW: 'template-schedule-row',
         };
@@ -486,7 +468,7 @@ namespace WallSurviveTimerView {
 
             this.parent = view;
             this.domManager = new DOMManager(view);
-            this.domManager.addDOMs(SchedulTableViewBinder.KEYS);
+            this.domManager.addDOMs(ScheduleTableViewBinder.KEYS);
         }
 
         syncTime(time: number): void {
@@ -496,6 +478,7 @@ namespace WallSurviveTimerView {
                 row.syncTime(time);
             }
         }
+
         update(): void {
             this.updateListener(this.time);
         }
@@ -510,11 +493,8 @@ namespace WallSurviveTimerView {
             this.update();
         }
 
-        setStartEndTime(startTime: number, endTime: number): void {
-        }
-
-        addRowFromData(data: ScheduleRowData) {
-            const { SCHEDULE_ROW } = SchedulTableViewBinder.KEYS;
+        addRowFromData(data: ScheduleRowData[]) {
+            const { SCHEDULE_ROW } = ScheduleTableViewBinder.KEYS;
 
             data.sort((a, b) => a[1][1] - b[1][1]);
 
@@ -539,5 +519,81 @@ namespace WallSurviveTimerView {
         }
     }
 
+    export class TimerViewBinder {
+        static readonly KEYS = {
+            TIMELINE: 'timeline',
+            TIME_PANEL: 'time-panel',
+            SCHEDULE_TABLE: 'schedule-table',
+        };
 
+        time: number;
+        startTime: number;
+        endTime: number;
+
+        parent: HTMLElement;
+        domManager: DOMManager;
+
+        timelineBinder: TimelineViewBinder;
+        timePanelBinder: TimePanelViewBinder;
+        scheduleBinder: ScheduleTableViewBinder;
+
+        constructor(view: HTMLElement) {
+            this.time = 0;
+            this.startTime = 0;
+            this.endTime = 0;
+
+            this.parent = view
+            this.domManager = new DOMManager(view);
+            this.domManager.addDOMs(TimerViewBinder.KEYS);
+
+            this.timelineBinder = new TimelineViewBinder(this.domManager.getDOM(TimerViewBinder.KEYS.TIMELINE));
+            this.timePanelBinder = new TimePanelViewBinder(this.domManager.getDOM(TimerViewBinder.KEYS.TIME_PANEL));
+            this.scheduleBinder = new ScheduleTableViewBinder(this.domManager.getDOM(TimerViewBinder.KEYS.SCHEDULE_TABLE));
+
+            this.initListener();
+        }
+
+        initListener() {
+            this.timePanelBinder.setUpdateListener((time) => {
+                this.syncTime(time);
+            });
+
+            this.scheduleBinder.setUpdateListener((time) => {
+                this.syncTime(time);
+            });
+        }
+
+        syncTime(time: number): void {
+            this.timelineBinder.syncTime(time);
+            this.timePanelBinder.syncTime(time);
+            this.scheduleBinder.syncTime(time);
+        }
+
+        setTime(time: number) {
+            this.time = time;
+            this.syncTime(time);
+        }
+
+        setStartEndTime(startTime: number, endTime: number): void {
+            this.startTime = startTime;
+            this.endTime = endTime;
+
+            this.timelineBinder.setStartEndTime(startTime, endTime);
+            this.timePanelBinder.setStartEndTime(startTime, endTime);
+        }
+
+        addRowFromData(data: ScheduleRowData[]) {
+            this.scheduleBinder.addRowFromData(data);
+
+            const timelineInfo: [number, TimelineMarkType][] = [];
+            for (const [type, times, info] of data) {
+                if (type == WallSurviveTimer.EnemyType.WARNING)
+                    timelineInfo.push([times[1], TimelineMarkType.WARNING]);
+                else
+                    timelineInfo.push([times[1], TimelineMarkType.BOSS]);
+            }
+
+            this.timelineBinder.setEnemyInfo(timelineInfo);
+        }
+    }
 }

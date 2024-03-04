@@ -117,11 +117,42 @@ window.onload = async () => {
 
     
 
-    const binder4 = new WallSurviveTimerView.SchedulTableViewBinder(
-        document.getElementById('schedule-table')!
-    );
+    // const binder4 = new WallSurviveTimerView.ScheduleTableViewBinder(
+    //     document.getElementById('schedule-table')!
+    // );
 
-    binder4.addRowFromData([
+    // binder4.addRowFromData([
+    //     [
+    //         WallSurviveTimer.EnemyType.WARNING,
+    //         [2000, 4000, 6000],
+    //         [
+    //             ['11', '', []],
+    //             ['', '', []],
+    //         ]
+    //     ],
+
+    //     [
+    //         WallSurviveTimer.EnemyType.BOSS,
+    //         [1000, 3000, 5000],
+    //         [
+    //             ['11', '11 예측', ['T1', 'T2', 'T3']],
+    //             ['22', '22 예측', ['T11', 'T22', 'T33']],
+    //         ]
+    //     ],
+    // ]);
+
+    // for (let time = 0; time <= 7000; time += 1000) {
+    //     binder4.setTime(time);
+    //     console.warn(`binder4.setTime(${time});`);
+    //     await click_wait();
+    // }
+
+
+
+    const binder5 = new WallSurviveTimerView.TimerViewBinder(document.body);
+
+    binder5.setStartEndTime(0, 10000);
+    binder5.addRowFromData([
         [
             WallSurviveTimer.EnemyType.WARNING,
             [2000, 4000, 6000],
@@ -142,7 +173,7 @@ window.onload = async () => {
     ]);
 
     for (let time = 0; time <= 7000; time += 1000) {
-        binder4.setTime(time);
+        binder5.setTime(time);
         console.warn(`binder4.setTime(${time});`);
         await click_wait();
     }
