@@ -227,6 +227,7 @@ namespace WallSurviveTimerView {
         PREDICT_SELECT = 'PREDICT_SELECT',
         BOSS_NO_SELECT = 'BOSS_NO_SELECT',
         BOSS_SELECT = 'BOSS_SELECT',
+        BOSS_ONE = 'BOSS_ONE',
         WARNING = 'WARNING',
     }
 
@@ -239,6 +240,7 @@ namespace WallSurviveTimerView {
             PREDICT_SELECT: 'template-predict-select',
             BOSS_NO_SELECT: 'template-boss-no-select',
             BOSS_SELECT: 'template-boss-select',
+            BOSS_ONE: 'template-boss-one',
             WARNING: 'template-warning',
         };
 
@@ -252,6 +254,9 @@ namespace WallSurviveTimerView {
             SELECT_1: 'select-1',
             SELECT_2: 'select-2',
             SELECT_CHANGE: 'select-change',
+            TAG_1_CONTAINER: 'tag-1-container',
+            TAG_2_CONTAINER: 'tag-2-container',
+            TAG: 'template-tag',
         };
 
         info: ScheduleRowInfo;
@@ -386,7 +391,7 @@ namespace WallSurviveTimerView {
         }
 
         syncText(): void {
-            const { TEXT_1_MAIN, TEXT_1_PREDICT, TEXT_2_MAIN, TEXT_2_PREDICT } = ScheduleRowViewBinder.ROW_KEYS;
+            const { TEXT_1_MAIN, TEXT_1_PREDICT, TEXT_2_MAIN, TEXT_2_PREDICT, TAG_1_CONTAINER, TAG_2_CONTAINER, TAG } = ScheduleRowViewBinder.ROW_KEYS;
             const main = (this.selected != 2) ? 0 : 1, sub = (this.selected != 2) ? 1 : 0;
 
             try {
@@ -407,6 +412,26 @@ namespace WallSurviveTimerView {
             try {
                 const element = this.rowDomManager.getDOM(TEXT_2_PREDICT);
                 element.textContent = this.info[sub][1];
+            } catch (e) { }
+
+            try {
+                const element = this.rowDomManager.getDOM(TAG_1_CONTAINER);
+                
+                for (const tagName of this.info[main][2]) {
+                    const tagElement = this.rowDomManager.cloneDOM(TAG);
+                    tagElement.textContent = tagName;
+                    element.appendChild(tagElement);
+                }
+            } catch (e) { }
+
+            try {
+                const element = this.rowDomManager.getDOM(TAG_2_CONTAINER);
+                
+                for (const tagName of this.info[sub][2]) {
+                    const tagElement = this.rowDomManager.cloneDOM(TAG);
+                    tagElement.textContent = tagName;
+                    element.appendChild(tagElement);
+                }
             } catch (e) { }
         }
 
@@ -440,7 +465,7 @@ namespace WallSurviveTimerView {
         }
     }
 
-    type ScheduleRowData = [
+    export type ScheduleRowData = [
         WallSurviveTimer.EnemyType,
         ScheduleTime,
         ScheduleRowInfo
@@ -508,6 +533,8 @@ namespace WallSurviveTimerView {
                 rowBinder.setTime(this.time);
                 if (type == WallSurviveTimer.EnemyType.WARNING)
                     rowBinder.setMode(ScheduleRowMode.WARNING);
+                else if (info.length == 1)
+                    rowBinder.setMode(ScheduleRowMode.BOSS_ONE);
                 else
                     rowBinder.setMode(ScheduleRowMode.PREDICT_NO_SELECT);
                 this.addRow(rowBinder);
@@ -586,7 +613,7 @@ namespace WallSurviveTimerView {
             this.scheduleBinder.addRowFromData(data);
 
             const timelineInfo: [number, TimelineMarkType][] = [];
-            for (const [type, times, info] of data) {
+            for (const [type, times, _] of data) {
                 if (type == WallSurviveTimer.EnemyType.WARNING)
                     timelineInfo.push([times[1], TimelineMarkType.WARNING]);
                 else

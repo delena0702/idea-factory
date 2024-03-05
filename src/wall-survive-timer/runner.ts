@@ -149,32 +149,37 @@ window.onload = async () => {
 
 
 
-    const binder5 = new WallSurviveTimerView.TimerViewBinder(document.body);
+    // const binder5 = new WallSurviveTimerView.TimerViewBinder(document.body);
 
-    binder5.setStartEndTime(0, 10000);
-    binder5.addRowFromData([
-        [
-            WallSurviveTimer.EnemyType.WARNING,
-            [2000, 4000, 6000],
-            [
-                ['11', '', []],
-                ['', '', []],
-            ]
-        ],
+    // binder5.setStartEndTime(0, 10000);
+    // binder5.setTime(0);
+    // binder5.addRowFromData([
+    //     [
+    //         WallSurviveTimer.EnemyType.WARNING,
+    //         [2000, 4000, 6000],
+    //         [
+    //             ['11', '', []],
+    //         ]
+    //     ],
 
-        [
-            WallSurviveTimer.EnemyType.BOSS,
-            [1000, 3000, 5000],
-            [
-                ['11', '11 예측', ['T1', 'T2', 'T3']],
-                ['22', '22 예측', ['T11', 'T22', 'T33']],
-            ]
-        ],
-    ]);
+    //     [
+    //         WallSurviveTimer.EnemyType.BOSS,
+    //         [1000, 3000, 5000],
+    //         [
+    //             ['11', '11 예측', ['T1', 'T2', 'T3']],
+    //             ['22', '22 예측', ['T11', 'T22', 'T33']],
+    //         ]
+    //     ],
 
-    for (let time = 0; time <= 7000; time += 1000) {
-        binder5.setTime(time);
-        console.warn(`binder4.setTime(${time});`);
-        await click_wait();
-    }
+    //     [
+    //         WallSurviveTimer.EnemyType.BOSS,
+    //         [3000, 5000, 7000],
+    //         [
+    //             ['단독 보오스', '', ['T1', 'T2', 'T3']],
+    //         ]
+    //     ],
+    // ]);
+
+    const timer = new WallSurviveTimer.Timer();
+    timer.start();
 };

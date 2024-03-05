@@ -1,32 +1,9 @@
 namespace WallSurviveTimer {
     type Time = number;
 
-    type RawEventData = [string, string];
-    type EventData = [number, string];
-
     export enum EnemyType {
         WARNING = 0,
         BOSS = 1,
-    }
-
-    class EventDataStorage {
-        static readonly data: [EnemyType, RawEventData[]][] = [
-            [EnemyType.BOSS, [['5:00', '공생충 => 촉수형제/식충 => 군단숙주'], ['12:50', '촉수형제 or 군단숙주']]],
-            [EnemyType.BOSS, [['9:00', '자가라의 헤비좀비 => 자가라/질럿 + 메딕 => 감염된 탱크'], ['30:00', '자가라 or 감염된 탱크']]],
-            [EnemyType.BOSS, [['31:00', '군단충 + 방사능 미친개 => 살모사/피갈리스크 => 오메가리스크'], ['46:40', '살모사 or 오메가리스크']]],
-            [EnemyType.BOSS, [['45:00', '변종뮤탈 + 감염된 벤시 => 감염된 토르/수호군주 => 거대괴수'], ['1:03:20', '감염된 토르 or 거대괴수']]],
-            [EnemyType.BOSS, [['01:13:30', '브루탈리스크']]],
-
-            [EnemyType.WARNING, [['19:00', '대공경보']]],
-            [EnemyType.WARNING, [['39:00', '공중 유닛 증가']]],
-        ];
-
-        static makeTimerTaskManager(): TimerTaskManager {
-            const retval = new TimerTaskManager();
-            for (const [type, rawData] of this.data)
-                retval.addTask(new TimerTask(type, rawData));
-            return retval;
-        }
     }
 
     export class TimeConverter {
@@ -65,118 +42,64 @@ namespace WallSurviveTimer {
         }
     }
 
-    export class TimerTask {
-        private type: EnemyType;
+    class EventDataStorage {
+        static readonly data: [EnemyType, string[], [string, string, string[]][]][] = [
+            [
+                EnemyType.BOSS, ['5:00', '12:50'], [
+                    ['촉수형제', '공생충', ['', '']],
+                    ['식충', '군단숙주', ['', '']],
+                ]
+            ],
+            [
+                EnemyType.BOSS, ['9:00', '30:00'], [
+                    ['자가라', '자가라의 헤비좀비', ['', '']],
+                    ['감염된 탱크', '질럿 + 메딕', ['', '']],
+                ]
+            ],
+            [
+                EnemyType.BOSS, ['31:00', '46:40'], [
+                    ['살모사', '군단충 + 방사능 미친개', ['', '']],
+                    ['오메가리스크', '피갈리스크', ['', '']],
+                ]
+            ],
+            [
+                EnemyType.BOSS, ['45:00', '1:03:20'], [
+                    ['감염된 토르', '변종뮤탈 + 감염된 벤시', ['', '']],
+                    ['거대괴수', '수호군주', ['', '']],
+                ]
+            ],
+            [
+                EnemyType.BOSS, ['01:03:30', '01:13:30'], [
+                    ['브루탈리스크', '', ['', '']],
+                ]
+            ],
 
-        private timeline: EventData[];
-        private idx: number;
+            [
+                EnemyType.WARNING, ['9:00', '19:00'], [
+                    ['대공경보', '', []],
+                ]
+            ],
 
-        public constructor(type: EnemyType, timeline: RawEventData[]) {
-            this.type = type;
+            [
+                EnemyType.WARNING, ['29:00', '39:00'], [
+                    ['공중 유닛 증가', '', []],
+                ]
+            ],
+        ];
 
-            this.timeline = timeline.map((x) => TimerTask.convertToEventData(x));
-            this.timeline.sort((a, b) => a[0] - b[0]);
-
-            this.idx = 0;
-        }
-
-        private static convertToEventData(raw: RawEventData): EventData {
-            return [TimeConverter.str2num(raw[0]), raw[1]];
-        }
-
-        public getEnemyType(): EnemyType {
-            return this.type;
-        }
-
-        public getEventTime(): Time | null {
-            if (!(this.idx < this.timeline.length))
-                return null;
-            return this.timeline[this.idx][0];
-        }
-
-        public getEventName(): string | null {
-            if (!(this.idx < this.timeline.length))
-                return null;
-            return this.timeline[this.idx][1];
-        }
-
-        public getNextEventTime(): Time | null {
-            if (!(this.idx + 1 < this.timeline.length))
-                return null;
-            return this.timeline[this.idx + 1][0];
-        }
-
-        public getNextEventName(): string | null {
-            if (!(this.idx + 1 < this.timeline.length))
-                return null;
-            return this.timeline[this.idx + 1][1];
-        }
-
-        public pop(): boolean {
-            if (!(this.idx < this.timeline.length))
-                return false;
-
-            this.idx++;
-            return true;
-        }
-
-        public clear(): void {
-            this.idx = 0;
-        }
-
-        public sync(time: Time): void {
-            this.clear();
-
-            let s = 0, e = this.timeline.length, m = 0;
-            while (s < e) {
-                m = Math.floor((s + e) / 2);
-
-                if (this.timeline[m][0] < time)
-                    s = m + 1;
-                else
-                    e = m;
+        static getRowData(): WallSurviveTimerView.ScheduleRowData[] {
+            const retval: WallSurviveTimerView.ScheduleRowData[] = [];
+            
+            for (const row of this.data) {
+                const timeStrings = row[1];
+                retval.push([row[0], [
+                    TimeConverter.str2num(timeStrings[0]),
+                    TimeConverter.str2num(timeStrings[1]),
+                    TimeConverter.str2num(timeStrings[1]) + 60 * 1000
+                ], row[2]]);
             }
 
-            this.idx = e;
-        }
-    }
-
-    export class TimerTaskManager {
-        private value: TimerTask[];
-
-        constructor() {
-            this.value = [];
-        }
-
-        getTaskList(): TimerTask[] {
-            return this.value.map(x => x);
-        }
-
-        addTask(task: TimerTask): void {
-            this.value.push(task);
-            this.sortTasks();
-        }
-
-        sync(time: Time): void {
-            for (const task of this.value)
-                task.sync(time);
-            this.sortTasks();
-        }
-
-        forwardSync(time: Time): void {
-            while (true) {
-                const task = this.value[0];
-
-                if (!((task.getEventTime() ?? Infinity) < time))
-                    break;
-
-                task.pop();
-                this.sortTasks();
-            }
-        }
-
-        sortTasks(): void {
-            this.value.sort((a, b) => (a.getEventTime() ?? Infinity) - (b.getEventTime() ?? Infinity));
+            return retval;
         }
     }
 
@@ -188,12 +111,12 @@ namespace WallSurviveTimer {
 
         private intervalValue: number | null;
 
-        private timerTaskManager: TimerTaskManager;
+        private binder: WallSurviveTimerView.TimerViewBinder;
 
         public constructor();
         public constructor(speed: number);
         public constructor(speed?: number) {
-            this.speed = 1.44 * 10;
+            this.speed = 1.44 * 100;
             if (speed !== undefined)
                 this.speed = speed;
 
@@ -202,7 +125,10 @@ namespace WallSurviveTimer {
 
             this.intervalValue = null;
 
-            this.timerTaskManager = EventDataStorage.makeTimerTaskManager();
+            this.binder = new WallSurviveTimerView.TimerViewBinder(document.body);
+            this.binder.setStartEndTime(0, TimeConverter.str2num('1:13:30'));
+            this.binder.addRowFromData(EventDataStorage.getRowData());
+            this.binder.setTime(0);
         }
 
         public start(): void {
@@ -226,16 +152,12 @@ namespace WallSurviveTimer {
                 TimerError.startTimeIsNull();
 
             this.passedTime = new Date().getTime() - this.startTime;
-
-            this.timerTaskManager.forwardSync(this.speed * this.passedTime);
+            
             this.show();
         }
 
         private show(): void {
-            // TODO : output 연결 필요!
-            const result = this.timerTaskManager.getTaskList();
-            if (0 < result.length)
-                console.log(this.passedTime * this.speed, result[0].getEventTime(), result[0].getEventName());
+            this.binder.setTime(this.passedTime * this.speed);
         }
 
         public pause(): void {
@@ -266,7 +188,6 @@ namespace WallSurviveTimer {
             this.startTime = new Date().getTime() - time;
             this.passedTime = time;
 
-            this.timerTaskManager.sync(this.speed * this.passedTime);
             this.show();
         }
     }
