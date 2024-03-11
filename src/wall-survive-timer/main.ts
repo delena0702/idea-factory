@@ -1,5 +1,5 @@
 namespace WallSurviveTimer {
-    type Time = number;
+    type RealTime = number;
 
     export enum EnemyType {
         WARNING = 0,
@@ -7,7 +7,7 @@ namespace WallSurviveTimer {
     }
 
     export class TimeConverter {
-        public static str2num(str: string): Time {
+        public static str2num(str: string): RealTime {
             try {
                 const result = str.split(':').reduce((a, x) => a * 60 + parseInt(x), 0);
                 if (isNaN(result))
@@ -18,7 +18,7 @@ namespace WallSurviveTimer {
             }
         }
 
-        public static num2str(num: Time): string {
+        public static num2str(num: RealTime): string {
             const arr = [0, 0, 0];
 
             num = Math.floor(num / 1000);
@@ -31,7 +31,7 @@ namespace WallSurviveTimer {
             return `${arr[1]}:${this.padZero(arr[2])}`;
         }
 
-        public static diffNum2str(num: Time): string {
+        public static diffNum2str(num: RealTime): string {
             if (num >= 0)
                 return `+${this.num2str(num)}`;
             return `-${this.num2str(-num)}`;
@@ -106,8 +106,8 @@ namespace WallSurviveTimer {
     export class Timer {
         private speed: number;
 
-        private startTime: Time | null;
-        private passedTime: Time;
+        private startTime: RealTime | null;
+        private passedTime: RealTime;
 
         private intervalValue: number | null;
 
@@ -116,7 +116,7 @@ namespace WallSurviveTimer {
         public constructor();
         public constructor(speed: number);
         public constructor(speed?: number) {
-            this.speed = 1.44 * 100;
+            this.speed = 1.44;
             if (speed !== undefined)
                 this.speed = speed;
 
@@ -128,7 +128,12 @@ namespace WallSurviveTimer {
             this.binder = new WallSurviveTimerView.TimerViewBinder(document.body);
             this.binder.setStartEndTime(0, TimeConverter.str2num('1:13:30'));
             this.binder.addRowFromData(EventDataStorage.getRowData());
-            this.binder.setTime(0);
+
+            const timer = this;
+            this.binder.setUpdateListener((time: number) => {
+                timer.syncTime(time);
+            });
+            this.syncTime(0);
         }
 
         public start(): void {
@@ -151,13 +156,12 @@ namespace WallSurviveTimer {
             if (this.startTime === null)
                 TimerError.startTimeIsNull();
 
-            this.passedTime = new Date().getTime() - this.startTime;
-            
-            this.show();
+            this.passedTime = new Date().getTime() - this.startTime; 
+            this.update();
         }
 
-        private show(): void {
-            this.binder.setTime(this.passedTime * this.speed);
+        private update(): void {
+            this.syncTime(this.passedTime * this.speed);
         }
 
         public pause(): void {
@@ -168,7 +172,7 @@ namespace WallSurviveTimer {
             this.startTime = null;
 
             this.stopProc();
-            this.show();
+            this.update();
         }
 
         public restart(): void {
@@ -181,14 +185,22 @@ namespace WallSurviveTimer {
             this.passedTime = 0;
 
             this.stopProc();
-            this.show();
+            this.update();
         }
 
-        public skip(time: Time): void {
-            this.startTime = new Date().getTime() - time;
+        public skip(time: RealTime): void {
             this.passedTime = time;
 
-            this.show();
+            this.update();
+        }
+
+        public syncTime(time: number): void {
+            const realTime: RealTime = time / this.speed;
+
+            this.startTime = new Date().getTime() - realTime;
+            this.passedTime = realTime;
+
+            this.binder.syncTime(time);
         }
     }
 

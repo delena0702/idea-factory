@@ -265,7 +265,6 @@ namespace WallSurviveTimerView {
         targetTime: ScheduleTime;
         mode: ScheduleRowMode;
         selected: number;
-        updateListener: (time: number) => void;
 
         parent: HTMLElement;
         row: HTMLElement;
@@ -285,9 +284,6 @@ namespace WallSurviveTimerView {
 
             this.mode = ScheduleRowMode.WARNING;
             this.selected = 0;
-            this.updateListener = () => {
-                this.syncTime(this.time);
-            };
 
             this.parent = view;
             this.domManager = new DOMManager(view);
@@ -328,14 +324,6 @@ namespace WallSurviveTimerView {
                     binder.setMode(ScheduleRowMode.PREDICT_SELECT);
                 };
             } catch (e) { }
-        }
-
-        setUpdateListener(callback: (time: number) => void): void {
-            this.updateListener = callback;
-        }
-
-        update(): void {
-            this.updateListener(this.time);
         }
 
         syncTime(time: number): void {
@@ -437,7 +425,6 @@ namespace WallSurviveTimerView {
 
         setTime(time: number): void {
             this.time = time;
-            this.update();
         }
 
         setMode(mode: ScheduleRowMode): void {
@@ -487,9 +474,7 @@ namespace WallSurviveTimerView {
             this.time = 0;
             this.rows = [];
 
-            this.updateListener = () => {
-                this.syncTime(this.time);
-            };
+            this.updateListener = () => { };
 
             this.parent = view;
             this.domManager = new DOMManager(view);
@@ -557,6 +542,8 @@ namespace WallSurviveTimerView {
         startTime: number;
         endTime: number;
 
+        updateListener: (time: number) => void;
+
         parent: HTMLElement;
         domManager: DOMManager;
 
@@ -577,17 +564,7 @@ namespace WallSurviveTimerView {
             this.timePanelBinder = new TimePanelViewBinder(this.domManager.getDOM(TimerViewBinder.KEYS.TIME_PANEL));
             this.scheduleBinder = new ScheduleTableViewBinder(this.domManager.getDOM(TimerViewBinder.KEYS.SCHEDULE_TABLE));
 
-            this.initListener();
-        }
-
-        initListener() {
-            this.timePanelBinder.setUpdateListener((time) => {
-                this.syncTime(time);
-            });
-
-            this.scheduleBinder.setUpdateListener((time) => {
-                this.syncTime(time);
-            });
+            this.updateListener = () => { };
         }
 
         syncTime(time: number): void {
@@ -596,9 +573,21 @@ namespace WallSurviveTimerView {
             this.scheduleBinder.syncTime(time);
         }
 
-        setTime(time: number) {
+        setTime(time: number): void {
             this.time = time;
-            this.syncTime(time);
+
+            this.update();
+        }
+
+        setUpdateListener(callback: (time: number) => void): void {
+            this.updateListener = callback;
+            
+            this.timePanelBinder.setUpdateListener(callback);
+            this.scheduleBinder.setUpdateListener(callback);
+        }
+
+        update(): void {
+            this.updateListener(this.time);
         }
 
         setStartEndTime(startTime: number, endTime: number): void {
