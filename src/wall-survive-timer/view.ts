@@ -3,17 +3,17 @@ namespace WallSurviveTimerView {
         private parent: HTMLElement;
         private domCollection: { [key: string]: HTMLElement };
 
-        constructor(element: HTMLElement) {
+        public constructor(element: HTMLElement) {
             this.parent = element;
             this.domCollection = {};
         }
 
-        addDOMs(keyMapper: { [key: string]: string }): void {
+        public addDOMs(keyMapper: { [key: string]: string }): void {
             for (const key in keyMapper)
                 this.addDOM(keyMapper[key]);
         }
 
-        addDOM(id: string): boolean {
+        public addDOM(id: string): boolean {
             const element = this.parent.querySelector(`#${id}`);
             if (element === null)
                 return false;
@@ -25,22 +25,22 @@ namespace WallSurviveTimerView {
             return true;
         }
 
-        getDOM(id: string): HTMLElement {
+        public getDOM(id: string): HTMLElement {
             return this.domCollection[id];
         }
 
-        cloneDOM(id: string): HTMLElement {
+        public cloneDOM(id: string): HTMLElement {
             return this.domCollection[id].cloneNode(true) as HTMLElement;
         }
     }
 
     enum TimelineMarkType {
-        WARNING = 0,
-        // PREDICT = 1,
-        BOSS = 2,
+        WARNING,
+        // PREDICT,
+        BOSS,
     }
 
-    export class TimelineViewBinder {
+    class TimelineViewBinder {
         static readonly KEYS: { [key: string]: string } = {
             START_TIME: 'start-time',
             END_TIME: 'end-time',
@@ -51,61 +51,61 @@ namespace WallSurviveTimerView {
             DOWN_MARK: 'template-down-mark',
         };
 
-        parent: HTMLElement;
-        domManager: DOMManager;
+        private parent: HTMLElement;
+        private domManager: DOMManager;
 
-        time: number;
-        startTime: number;
-        endTime: number;
+        private time: number;
+        private startTime: number;
+        private endTime: number;
 
-        constructor(view: HTMLElement) {
+        public constructor(view: HTMLElement) {
+            this.time = 0;
+            this.startTime = 0;
+            this.endTime = 0;
+
             this.parent = view;
             this.domManager = new DOMManager(view);
             this.domManager.addDOMs(TimelineViewBinder.KEYS);
 
-            this.time = 0;
-            this.startTime = 0;
-            this.endTime = 0;
-            this.setStartEndTime(this.startTime, this.endTime);
+            this.syncStartEndTime(this.startTime, this.endTime);
         }
 
-        syncTime(time: number): void {
-            this.setTime(time);
-        }
-
-        setTime(time: number): void {
+        public syncTime(time: number): void {
             const { PROGRESS_BAR } = TimelineViewBinder.KEYS;
 
             this.time = time;
+
             const progressBar = this.domManager.getDOM(PROGRESS_BAR);
             progressBar.style.width = `${this.getRatio(time)}%`;
         }
 
-        getRatio(time: number): number {
+        private getRatio(time: number): number {
             if (!(this.startTime <= time && time <= this.endTime))
-                throw `ERROR : ${time}이 구간 [${this.startTime} : ${this.endTime}]에 존재하지 않습니다.`;
-            return 100 * (time - this.startTime) / (this.endTime - this.startTime)
+                WallSurviveTimerViewError.invalidTime(time, this.startTime, this.endTime);
+            if (this.startTime >= this.endTime)
+                WallSurviveTimerViewError.invalidTimeRange(this.startTime, this.endTime);
+            return 100 * (time - this.startTime) / (this.endTime - this.startTime);
         }
 
-        setStartEndTime(startTime: number, endTime: number): void {
+        public syncStartEndTime(startTime: number, endTime: number): void {
             const { START_TIME, END_TIME } = TimelineViewBinder.KEYS;
 
             this.startTime = startTime;
             this.endTime = endTime;
 
-            const startTimeDOM = this.domManager.getDOM(START_TIME);
-            startTimeDOM.textContent = WallSurviveTimer.TimeConverter.num2str(startTime);
+            const startTimeElement = this.domManager.getDOM(START_TIME);
+            startTimeElement.textContent = WallSurviveTimer.TimeConverter.num2str(startTime);
 
-            const endTimeDOM = this.domManager.getDOM(END_TIME);
-            endTimeDOM.textContent = WallSurviveTimer.TimeConverter.num2str(endTime);
+            const endTimeElement = this.domManager.getDOM(END_TIME);
+            endTimeElement.textContent = WallSurviveTimer.TimeConverter.num2str(endTime);
         }
 
-        setEnemyInfo(info: [number, TimelineMarkType][]): void {
+        public setEnemyInfo(info: [number, TimelineMarkType][]): void {
             for (const [time, markType] of info)
-                this.setMark(time, markType);
+                this.displayMark(time, markType);
         }
 
-        setMark(time: number, markType: TimelineMarkType): void {
+        private displayMark(time: number, markType: TimelineMarkType): void {
             const { UP_MARK, DOWN_MARK, UP_MARK_BAR, DOWN_MARK_BAR } = TimelineViewBinder.KEYS;
 
             if (markType == TimelineMarkType.BOSS) {
@@ -135,46 +135,40 @@ namespace WallSurviveTimerView {
             BTN_SKIP: "btn-skip",
         };
 
-        parent: HTMLElement;
-        domManager: DOMManager;
+        private time: number;
+        private startTime: number;
+        private endTime: number;
 
-        updateListener: (time: number) => void;
+        private parent: HTMLElement;
+        private domManager: DOMManager;
 
-        time: number;
-        startTime: number;
-        endTime: number;
+        private updateListener: (time: number) => void;
 
-        constructor(view: HTMLElement) {
-            this.parent = view;
-            this.domManager = new DOMManager(view);
-            this.domManager.addDOMs(TimePanelViewBinder.KEYS);
-
+        public constructor(view: HTMLElement) {
             this.time = 0;
             this.startTime = 0;
             this.endTime = 0;
 
-            this.updateListener = () => {
-                this.syncTime(this.time);
-            };
+            this.parent = view;
+            this.domManager = new DOMManager(view);
+            this.domManager.addDOMs(TimePanelViewBinder.KEYS);
 
+            this.updateListener = () => { };
             this.initListener();
         }
 
-        initListener(): void {
+        private initListener(): void {
             const { BTN_1, BTN_2, BTN_3, BTN_4, BTN_SKIP } = TimePanelViewBinder.KEYS;
-
-            this.domManager.getDOM(BTN_1).onclick = () => { this.addTime(-10000); };
-            this.domManager.getDOM(BTN_2).onclick = () => { this.addTime(-1000); };
-            this.domManager.getDOM(BTN_3).onclick = () => { this.addTime(1000); };
-            this.domManager.getDOM(BTN_4).onclick = () => { this.addTime(10000); };
-
             const binder = this;
-            this.domManager.getDOM(BTN_SKIP).onclick = () => {
-                binder.setTimeWithSkip();
-            };
+
+            this.domManager.getDOM(BTN_1).onclick = () => { binder.addTime(-10000); };
+            this.domManager.getDOM(BTN_2).onclick = () => { binder.addTime(-1000); };
+            this.domManager.getDOM(BTN_3).onclick = () => { binder.addTime(1000); };
+            this.domManager.getDOM(BTN_4).onclick = () => { binder.addTime(10000); };
+            this.domManager.getDOM(BTN_SKIP).onclick = () => { binder.setTimeWithSkip(); };
         }
 
-        syncTime(time: number): void {
+        public syncTime(time: number): void {
             const { OUTPUT_TIME } = TimePanelViewBinder.KEYS;
 
             this.time = time;
@@ -182,43 +176,39 @@ namespace WallSurviveTimerView {
             this.domManager.getDOM(OUTPUT_TIME).textContent = WallSurviveTimer.TimeConverter.num2str(time);
         }
 
-        update(): void {
+        private update(): void {
             this.updateListener(this.time);
         }
 
-        setUpdateListener(callback: (time: number) => void): void {
+        public setUpdateListener(callback: (time: number) => void): void {
             this.updateListener = callback;
         }
 
-        setStartEndTime(startTime: number, endTime: number): void {
+        public setStartEndTime(startTime: number, endTime: number): void {
             this.startTime = startTime;
             this.endTime = endTime;
         }
 
-        setTime(time: number): void {
-            if (!(this.startTime <= time && time <= this.endTime))
-                throw `ERROR : ${time}이 구간 [${this.startTime} : ${this.endTime}]에 존재하지 않습니다.`;
-
+        private setTime(time: number): void {
+            this.time = Math.max(this.startTime, Math.min(this.endTime, time));
             this.time = time;
 
             this.update();
         }
 
-        addTime(diffTime: number): void {
-            this.time += diffTime;
-            this.time = Math.max(this.startTime, Math.min(this.endTime, this.time));
-
-            this.update();
+        private addTime(diffTime: number): void {
+            this.setTime(this.time + diffTime);
         }
 
-        setTimeWithSkip(): void {
+        private setTimeWithSkip(): void {
             const { INPUT_TIME } = TimePanelViewBinder.KEYS;
 
             const inputElement = (this.domManager.getDOM(INPUT_TIME) as HTMLInputElement);
             const str = inputElement.value.trim();
             const time = WallSurviveTimer.TimeConverter.str2num(str);
-            this.setTime(time);
             inputElement.value = '';
+
+            this.setTime(time);
         }
     }
 
@@ -259,21 +249,20 @@ namespace WallSurviveTimerView {
             TAG: 'template-tag',
         };
 
-        info: ScheduleRowInfo;
+        private time: number;
+        private targetTime: ScheduleTime;
+        private info: ScheduleRowInfo;
 
-        time: number;
-        targetTime: ScheduleTime;
-        mode: ScheduleRowMode;
-        selected: number;
+        private mode: ScheduleRowMode;
+        private selected: number;
+        private display: boolean;
 
-        parent: HTMLElement;
-        row: HTMLElement;
-        domManager: DOMManager;
-        rowDomManager: DOMManager;
+        private parent: HTMLElement;
+        private row: HTMLElement;
+        private domManager: DOMManager;
+        private rowDomManager: DOMManager;
 
-        display: boolean;
-
-        constructor(view: HTMLElement) {
+        public constructor(view: HTMLElement) {
             this.info = [
                 ['', '', []],
                 ['', '', []],
@@ -301,7 +290,7 @@ namespace WallSurviveTimerView {
             this.initListener();
         }
 
-        initListener(): void {
+        private initListener(): void {
             const binder = this;
 
             try {
@@ -326,12 +315,26 @@ namespace WallSurviveTimerView {
             } catch (e) { }
         }
 
-        syncTime(time: number): void {
+        public syncTime(time: number): void {
             this.time = time;
 
             const { TEXT_TIME, TEXT_TIME_REMAIN } = ScheduleRowViewBinder.ROW_KEYS;
             const binder = this;
 
+            this.syncDisplay();
+
+            try {
+                const element = binder.rowDomManager.getDOM(TEXT_TIME);
+                element.textContent = WallSurviveTimer.TimeConverter.num2str(binder.targetTime[1]);
+            } catch (e) { }
+
+            try {
+                const element = binder.rowDomManager.getDOM(TEXT_TIME_REMAIN);
+                element.textContent = `(${WallSurviveTimer.TimeConverter.diffNum2str(binder.time - binder.targetTime[1])})`;
+            } catch (e) { }
+        }
+
+        private syncDisplay(): void {
             if (this.time < this.targetTime[0] || this.time > this.targetTime[2]) {
                 if (this.isDisplay())
                     this.setDisplay(false);
@@ -353,23 +356,13 @@ namespace WallSurviveTimerView {
                 if (this.mode == ScheduleRowMode.BOSS_SELECT)
                     this.setMode(ScheduleRowMode.PREDICT_SELECT);
             }
-
-            try {
-                const element = binder.rowDomManager.getDOM(TEXT_TIME);
-                element.textContent = WallSurviveTimer.TimeConverter.num2str(binder.targetTime[1]);
-            } catch (e) { }
-
-            try {
-                const element = binder.rowDomManager.getDOM(TEXT_TIME_REMAIN);
-                element.textContent = `(${WallSurviveTimer.TimeConverter.diffNum2str(binder.time - binder.targetTime[1])})`;
-            } catch (e) { }
         }
 
-        isDisplay(): boolean {
+        private isDisplay(): boolean {
             return this.display;
         }
 
-        setDisplay(flag: boolean): void {
+        private setDisplay(flag: boolean): void {
             this.display = flag;
 
             if (flag)
@@ -378,7 +371,7 @@ namespace WallSurviveTimerView {
                 this.parent.style.display = 'none';
         }
 
-        syncText(): void {
+        private syncInfo(): void {
             const { TEXT_1_MAIN, TEXT_1_PREDICT, TEXT_2_MAIN, TEXT_2_PREDICT, TAG_1_CONTAINER, TAG_2_CONTAINER, TAG } = ScheduleRowViewBinder.ROW_KEYS;
             const main = (this.selected != 2) ? 0 : 1, sub = (this.selected != 2) ? 1 : 0;
 
@@ -423,11 +416,7 @@ namespace WallSurviveTimerView {
             } catch (e) { }
         }
 
-        setTime(time: number): void {
-            this.time = time;
-        }
-
-        setMode(mode: ScheduleRowMode): void {
+        public setMode(mode: ScheduleRowMode): void {
             this.mode = mode;
 
             this.parent.removeChild(this.row);
@@ -439,16 +428,16 @@ namespace WallSurviveTimerView {
             this.parent.appendChild(this.row);
 
             this.syncTime(this.time);
-            this.syncText();
+            this.syncInfo();
 
             this.initListener();
         }
 
-        setInfo(targetTime: ScheduleTime, info: ScheduleRowInfo): void {
+        public setInfo(targetTime: ScheduleTime, info: ScheduleRowInfo): void {
             this.targetTime = targetTime;
             this.info = info;
 
-            this.syncText();
+            this.syncInfo();
         }
     }
 
@@ -458,30 +447,28 @@ namespace WallSurviveTimerView {
         ScheduleRowInfo
     ];
 
-    export class ScheduleTableViewBinder {
+    class ScheduleTableViewBinder {
         static readonly KEYS = {
             SCHEDULE_ROW: 'template-schedule-row',
         };
 
-        time: number;
-        rows: ScheduleRowViewBinder[];
-        updateListener: (time: number) => void;
+        private time: number;
 
-        parent: HTMLElement;
-        domManager: DOMManager;
+        private parent: HTMLElement;
+        private domManager: DOMManager;
 
-        constructor(view: HTMLElement) {
+        private rows: ScheduleRowViewBinder[];
+
+        public constructor(view: HTMLElement) {
             this.time = 0;
             this.rows = [];
-
-            this.updateListener = () => { };
 
             this.parent = view;
             this.domManager = new DOMManager(view);
             this.domManager.addDOMs(ScheduleTableViewBinder.KEYS);
         }
 
-        syncTime(time: number): void {
+        public syncTime(time: number): void {
             this.time = time;
 
             for (const row of this.rows) {
@@ -489,21 +476,7 @@ namespace WallSurviveTimerView {
             }
         }
 
-        update(): void {
-            this.updateListener(this.time);
-        }
-
-        setUpdateListener(callback: (time: number) => void): void {
-            this.updateListener = callback;
-        }
-
-        setTime(time: number): void {
-            this.time = time;
-
-            this.update();
-        }
-
-        addRowFromData(data: ScheduleRowData[]) {
+        public addRowFromData(data: ScheduleRowData[]) {
             const { SCHEDULE_ROW } = ScheduleTableViewBinder.KEYS;
 
             data.sort((a, b) => a[1][1] - b[1][1]);
@@ -515,7 +488,6 @@ namespace WallSurviveTimerView {
                 const rowBinder = new ScheduleRowViewBinder(rowElement);
 
                 rowBinder.setInfo(times, info);
-                rowBinder.setTime(this.time);
                 if (type == WallSurviveTimer.EnemyType.WARNING)
                     rowBinder.setMode(ScheduleRowMode.WARNING);
                 else if (info.length == 1)
@@ -524,9 +496,11 @@ namespace WallSurviveTimerView {
                     rowBinder.setMode(ScheduleRowMode.PREDICT_NO_SELECT);
                 this.addRow(rowBinder);
             }
+
+            this.syncTime(this.time);
         }
 
-        addRow(rowBinder: ScheduleRowViewBinder) {
+        private addRow(rowBinder: ScheduleRowViewBinder) {
             this.rows.push(rowBinder);
         }
     }
@@ -538,20 +512,18 @@ namespace WallSurviveTimerView {
             SCHEDULE_TABLE: 'schedule-table',
         };
 
-        time: number;
-        startTime: number;
-        endTime: number;
+        private time: number;
+        private startTime: number;
+        private endTime: number;
 
-        updateListener: (time: number) => void;
+        private parent: HTMLElement;
+        private domManager: DOMManager;
 
-        parent: HTMLElement;
-        domManager: DOMManager;
+        private timelineBinder: TimelineViewBinder;
+        private timePanelBinder: TimePanelViewBinder;
+        private scheduleBinder: ScheduleTableViewBinder;
 
-        timelineBinder: TimelineViewBinder;
-        timePanelBinder: TimePanelViewBinder;
-        scheduleBinder: ScheduleTableViewBinder;
-
-        constructor(view: HTMLElement) {
+        public constructor(view: HTMLElement) {
             this.time = 0;
             this.startTime = 0;
             this.endTime = 0;
@@ -563,42 +535,27 @@ namespace WallSurviveTimerView {
             this.timelineBinder = new TimelineViewBinder(this.domManager.getDOM(TimerViewBinder.KEYS.TIMELINE));
             this.timePanelBinder = new TimePanelViewBinder(this.domManager.getDOM(TimerViewBinder.KEYS.TIME_PANEL));
             this.scheduleBinder = new ScheduleTableViewBinder(this.domManager.getDOM(TimerViewBinder.KEYS.SCHEDULE_TABLE));
-
-            this.updateListener = () => { };
         }
 
-        syncTime(time: number): void {
+        public syncTime(time: number): void {
             this.timelineBinder.syncTime(time);
             this.timePanelBinder.syncTime(time);
             this.scheduleBinder.syncTime(time);
         }
 
-        setTime(time: number): void {
-            this.time = time;
-
-            this.update();
-        }
-
-        setUpdateListener(callback: (time: number) => void): void {
-            this.updateListener = callback;
-            
+        public setUpdateListener(callback: (time: number) => void): void {
             this.timePanelBinder.setUpdateListener(callback);
-            this.scheduleBinder.setUpdateListener(callback);
         }
 
-        update(): void {
-            this.updateListener(this.time);
-        }
-
-        setStartEndTime(startTime: number, endTime: number): void {
+        public setStartEndTime(startTime: number, endTime: number): void {
             this.startTime = startTime;
             this.endTime = endTime;
 
-            this.timelineBinder.setStartEndTime(startTime, endTime);
+            this.timelineBinder.syncStartEndTime(startTime, endTime);
             this.timePanelBinder.setStartEndTime(startTime, endTime);
         }
 
-        addRowFromData(data: ScheduleRowData[]) {
+        public addRowFromData(data: ScheduleRowData[]) {
             this.scheduleBinder.addRowFromData(data);
 
             const timelineInfo: [number, TimelineMarkType][] = [];
@@ -610,6 +567,15 @@ namespace WallSurviveTimerView {
             }
 
             this.timelineBinder.setEnemyInfo(timelineInfo);
+        }
+    }
+
+    class WallSurviveTimerViewError extends Error {
+        static invalidTime(time: number, startTime: number, endTime: number): never {
+            throw new WallSurviveTimerViewError(`TimelineViewBinder : ${time}이 구간 [${startTime} : ${endTime}]에 존재하지 않습니다.`);
+        }
+        static invalidTimeRange(startTime: number, endTime: number) {
+            throw new WallSurviveTimerViewError(`TimelineViewBinder : 시작 시간(${startTime})이 종료 시간(${endTime})보다 큽니다.`);
         }
     }
 }
