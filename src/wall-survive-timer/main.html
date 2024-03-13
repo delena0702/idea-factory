@@ -32,40 +32,42 @@
 
 <body>
     <!-- 타임라인 -->
-    <div id="timeline" class="container position-relative">
-        <div id="template-up-mark" class="position-absolute">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="30" fill="currentColor" viewBox="0 0 32 48">
-                <path d="M0.5 0.5H31.5V31.7929L16 47.2929L0.5 31.7929V0.5Z" stroke="" />
-            </svg>
-        </div>
-
-        <div id="template-down-mark" class="position-absolute">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="30" fill="currentColor" viewBox="0 0 32 48">
-                <path d="M0.5 47.5H31.5V16.2071L16 0.707108L0.5 16.2071V47.5Z" stroke="" />
-            </svg>
-        </div>
-
-        <div class="timeline-bar">
-            <!-- 위쪽 여백 -->
-        </div>
-
-        <div class="progress" role="progressbar">
-            <!-- 막대 -->
-            <div id="progress-bar" class="progress-bar text-bg-primary" style="width: 15%;"></div>
-        </div>
-
-        <div class="timeline-bar d-flex justify-content-between">
-            <!-- 타임라인의 시작 시간 / 끝 시간 -->
-            <p id="start-time" class="lead">00:00</p>
-            <p id="end-time" class="lead">30:00</p>
-        </div>
-
-        <div id="up-mark-bar" class="position-absolute top-0 start-0 end-0 timeline-bar">
-            <!-- 위쪽 타임바 -->
-        </div>
-
-        <div id="down-mark-bar" class="position-absolute bottom-0 start-0 end-0 timeline-bar">
-            <!-- 아래쪽 타임바 -->
+    <div class="container">
+        <div id="timeline" class="position-relative">
+            <div id="template-up-mark" class="position-absolute">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="30" fill="currentColor" viewBox="0 0 32 48">
+                    <path d="M0.5 0.5H31.5V31.7929L16 47.2929L0.5 31.7929V0.5Z" stroke="" />
+                </svg>
+            </div>
+    
+            <div id="template-down-mark" class="position-absolute">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="30" fill="currentColor" viewBox="0 0 32 48">
+                    <path d="M0.5 47.5H31.5V16.2071L16 0.707108L0.5 16.2071V47.5Z" stroke="" />
+                </svg>
+            </div>
+    
+            <div class="timeline-bar">
+                <!-- 위쪽 여백 -->
+            </div>
+    
+            <div class="progress" role="progressbar">
+                <!-- 막대 -->
+                <div id="progress-bar" class="progress-bar text-bg-primary" style="width: 15%;"></div>
+            </div>
+    
+            <div class="timeline-bar d-flex justify-content-between">
+                <!-- 타임라인의 시작 시간 / 끝 시간 -->
+                <p id="start-time" class="lead">00:00</p>
+                <p id="end-time" class="lead">30:00</p>
+            </div>
+    
+            <div id="up-mark-bar" class="position-absolute top-0 start-0 end-0 timeline-bar">
+                <!-- 위쪽 타임바 -->
+            </div>
+    
+            <div id="down-mark-bar" class="position-absolute bottom-0 start-0 end-0 timeline-bar">
+                <!-- 아래쪽 타임바 -->
+            </div>
         </div>
     </div>
 

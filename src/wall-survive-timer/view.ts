@@ -110,14 +110,14 @@ namespace WallSurviveTimerView {
 
             if (markType == TimelineMarkType.BOSS) {
                 const element = this.domManager.cloneDOM(UP_MARK);
-                element.style.left = `${this.getRatio(time)}%`;
+                element.style.left = `calc(${this.getRatio(time)}% - 10px)`;
                 element.children[0].setAttribute('fill', '#E42D2D');
                 this.domManager.getDOM(UP_MARK_BAR).appendChild(element);
             }
 
             else {
                 const element = this.domManager.cloneDOM(DOWN_MARK);
-                element.style.left = `${this.getRatio(time)}%`;
+                element.style.left = `calc(${this.getRatio(time)}% - 10px)`;
                 element.children[0].setAttribute('fill', '#F6B610');
                 this.domManager.getDOM(DOWN_MARK_BAR).appendChild(element);
             }
