@@ -104,6 +104,7 @@ namespace WallSurviveTimer {
 
     export class Timer {
         private speed: number;
+        private static readonly endTime = (1 * 3600 + 13 * 60 + 30) * 1000;
 
         private startTime: RealTime | null;
         private passedTime: RealTime;
@@ -125,7 +126,7 @@ namespace WallSurviveTimer {
             this.intervalValue = null;
 
             this.binder = new WallSurviveTimerView.TimerViewBinder(document.body);
-            this.binder.setStartEndTime(0, TimeConverter.str2num('1:13:30'));
+            this.binder.setStartEndTime(0, Timer.endTime);
             this.binder.addRowFromData(EventDataStorage.getRowData());
 
             const timer = this;
@@ -156,6 +157,10 @@ namespace WallSurviveTimer {
                 TimerError.startTimeIsNull();
 
             this.passedTime = new Date().getTime() - this.startTime; 
+
+            if (this.passedTime * this.speed >= Timer.endTime)
+                this.pause();
+
             this.update();
         }
 
@@ -167,7 +172,7 @@ namespace WallSurviveTimer {
             if (this.startTime === null)
                 TimerError.startTimeIsNull();
 
-            this.passedTime = new Date().getTime() - this.startTime;
+            this.passedTime = Math.min(Timer.endTime / this.speed, new Date().getTime() - this.startTime);
             this.startTime = null;
 
             this.stopProc();
