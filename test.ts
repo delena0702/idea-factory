@@ -47,10 +47,17 @@ export class Testable {
 
 export class Tester {
     static run(classes: typeof Testable[]): void {
+        const total_result = [0, 0];
         for (const cls of classes) {
             console.group(`${cls.name} ${'='.repeat(50)}`);
-            cls.run();
+            const result = cls.run();
+
+            total_result[0] += result[0];
+            total_result[1] += result[1];
+
             console.groupEnd();
         }
+
+        console.log(`\nTest Result : ${total_result[0]} / ${total_result[1]}`);
     }
 }
