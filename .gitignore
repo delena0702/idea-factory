@@ -1,4 +1,1 @@
 .vscode
-*.js
-!src/wall-survive-timer/*.js
-!node_modules/bootstrap/dist/js/bootstrap.bundle.min.js
