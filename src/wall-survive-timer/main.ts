@@ -79,7 +79,6 @@ namespace WallSurviveTimer {
                     ['대공경보', '', []],
                 ]
             ],
-
             [
                 EnemyType.WARNING, ['29:00', '39:00'], [
                     ['공중 유닛 증가', '', []],

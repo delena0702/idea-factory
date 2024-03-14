@@ -115,11 +115,17 @@
         <div id="template-schedule-row" class="row border">
             <!-- 전조 선택 전 -->
             <div id="template-predict-no-select" class="row">
-                <div class="col-12 col-md-2 text-center my-auto p-3">
-                    <p id="text-time" class="d-inline lead">20:24</p>
-                    <p id="text-time-remain" class="d-inline text-body-secondary"><small>(-12:34)</small></p>
+                <div class="col-12 col-md-2 text-center p-3">
+                    <div class="d-flex flex-wrap justify-content-center align-items-center h-100">
+                        <div class="mx-2">
+                            <p id="text-time" class="d-inline lead">40:48</p>
+                            <p id="text-time-remain" class="d-inline text-body-secondary"><small>(-1:23:34)</small></p>
+                        </div>
+                        <div class="mx-2 text-nowrap">
+                            남은 수급 : <span id="text-remain-supply"></span>
+                        </div>
+                    </div>
                 </div>
-
                 <div id="select-1" class="col-6 col-md-5 p-3 text-center" role="button">
                     <div class="row justify-content-center align-items-center">
                         <p id="text-1-predict" class="col-12 col-md-5"><small>공생축</small></p>
@@ -152,7 +158,7 @@
                             <p id="text-time-remain" class="d-inline text-body-secondary"><small>(-1:23:34)</small></p>
                         </div>
                         <div class="mx-2 text-nowrap">
-                            남은 수급 : 12
+                            남은 수급 : <span id="text-remain-supply"></span>
                         </div>
                     </div>
                 </div>

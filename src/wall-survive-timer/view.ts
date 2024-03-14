@@ -237,6 +237,7 @@ namespace WallSurviveTimerView {
         static readonly ROW_KEYS = {
             TEXT_TIME: 'text-time',
             TEXT_TIME_REMAIN: 'text-time-remain',
+            TEXT_REMAIN_SUPPLY: 'text-remain-supply',
             TEXT_1_MAIN: 'text-1-main',
             TEXT_1_PREDICT: 'text-1-predict',
             TEXT_2_MAIN: 'text-2-main',
@@ -318,7 +319,7 @@ namespace WallSurviveTimerView {
         public syncTime(time: number): void {
             this.time = time;
 
-            const { TEXT_TIME, TEXT_TIME_REMAIN } = ScheduleRowViewBinder.ROW_KEYS;
+            const { TEXT_TIME, TEXT_TIME_REMAIN, TEXT_REMAIN_SUPPLY } = ScheduleRowViewBinder.ROW_KEYS;
             const binder = this;
 
             this.syncDisplay();
@@ -331,6 +332,11 @@ namespace WallSurviveTimerView {
             try {
                 const element = binder.rowDomManager.getDOM(TEXT_TIME_REMAIN);
                 element.textContent = `(${WallSurviveTimer.TimeConverter.diffNum2str(binder.time - binder.targetTime[1])})`;
+            } catch (e) { }
+
+            try {
+                const element = binder.rowDomManager.getDOM(TEXT_REMAIN_SUPPLY);
+                element.textContent = `${Math.floor((binder.targetTime[1] - binder.time) / (30 * 1000))}`;
             } catch (e) { }
         }
 
