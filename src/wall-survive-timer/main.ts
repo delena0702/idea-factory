@@ -133,6 +133,12 @@ namespace WallSurviveTimer {
             this.binder.setUpdateListener((time: number) => {
                 timer.syncTime(time);
             });
+            this.binder.setToggleListener(() => {
+                if (timer.isPlay())
+                    timer.pause();
+                else
+                    timer.restart();
+            });
             this.syncTime(0);
         }
 
@@ -168,14 +174,19 @@ namespace WallSurviveTimer {
             this.syncTime(this.passedTime * this.speed);
         }
 
+        private isPlay(): boolean {
+            return this.intervalValue !== null;
+        }
+
         public pause(): void {
             if (this.startTime === null)
                 TimerError.startTimeIsNull();
 
+            this.stopProc();
+            
             this.passedTime = Math.min(Timer.endTime / this.speed, new Date().getTime() - this.startTime);
             this.startTime = null;
-
-            this.stopProc();
+            
             this.update();
         }
 
@@ -185,10 +196,11 @@ namespace WallSurviveTimer {
         }
 
         public stop(): void {
+            this.stopProc();
+
             this.startTime = null;
             this.passedTime = 0;
 
-            this.stopProc();
             this.update();
         }
 

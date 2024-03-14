@@ -124,7 +124,7 @@ namespace WallSurviveTimerView {
         }
     }
 
-    export class TimePanelViewBinder {
+    class TimePanelViewBinder {
         static readonly KEYS: { [key: string]: string } = {
             OUTPUT_TIME: "output-time",
             BTN_1: "btn-1",
@@ -133,6 +133,7 @@ namespace WallSurviveTimerView {
             BTN_4: "btn-4",
             INPUT_TIME: "input-time",
             BTN_SKIP: "btn-skip",
+            BTN_PLAY: "btn-play",
         };
 
         private time: number;
@@ -143,6 +144,7 @@ namespace WallSurviveTimerView {
         private domManager: DOMManager;
 
         private updateListener: (time: number) => void;
+        private toggleListener: () => void;
 
         public constructor(view: HTMLElement) {
             this.time = 0;
@@ -154,11 +156,12 @@ namespace WallSurviveTimerView {
             this.domManager.addDOMs(TimePanelViewBinder.KEYS);
 
             this.updateListener = () => { };
+            this.toggleListener = () => { };
             this.initListener();
         }
 
         private initListener(): void {
-            const { BTN_1, BTN_2, BTN_3, BTN_4, BTN_SKIP } = TimePanelViewBinder.KEYS;
+            const { BTN_1, BTN_2, BTN_3, BTN_4, BTN_SKIP, BTN_PLAY } = TimePanelViewBinder.KEYS;
             const binder = this;
 
             this.domManager.getDOM(BTN_1).onclick = () => { binder.addTime(-10000); };
@@ -166,6 +169,7 @@ namespace WallSurviveTimerView {
             this.domManager.getDOM(BTN_3).onclick = () => { binder.addTime(1000); };
             this.domManager.getDOM(BTN_4).onclick = () => { binder.addTime(10000); };
             this.domManager.getDOM(BTN_SKIP).onclick = () => { binder.setTimeWithSkip(); };
+            this.domManager.getDOM(BTN_PLAY).onclick = () => { binder.togglePlay(); };
         }
 
         public syncTime(time: number): void {
@@ -184,6 +188,10 @@ namespace WallSurviveTimerView {
             this.updateListener = callback;
         }
 
+        public setToggleListener(callback: () => void): void {
+            this.toggleListener = callback;
+        }
+
         public setStartEndTime(startTime: number, endTime: number): void {
             this.startTime = startTime;
             this.endTime = endTime;
@@ -194,6 +202,10 @@ namespace WallSurviveTimerView {
             this.time = time;
 
             this.update();
+        }
+
+        private togglePlay():void {
+            this.toggleListener();
         }
 
         private addTime(diffTime: number): void {
@@ -212,7 +224,7 @@ namespace WallSurviveTimerView {
         }
     }
 
-    export enum ScheduleRowMode {
+    enum ScheduleRowMode {
         PREDICT_NO_SELECT = 'PREDICT_NO_SELECT',
         PREDICT_SELECT = 'PREDICT_SELECT',
         BOSS_NO_SELECT = 'BOSS_NO_SELECT',
@@ -224,7 +236,7 @@ namespace WallSurviveTimerView {
     type ScheduleRowInfo = [string, string, string[]][];
     type ScheduleTime = [number, number, number];
 
-    export class ScheduleRowViewBinder {
+    class ScheduleRowViewBinder {
         static readonly KEYS = {
             PREDICT_NO_SELECT: 'template-predict-no-select',
             PREDICT_SELECT: 'template-predict-select',
@@ -551,6 +563,10 @@ namespace WallSurviveTimerView {
 
         public setUpdateListener(callback: (time: number) => void): void {
             this.timePanelBinder.setUpdateListener(callback);
+        }
+
+        public setToggleListener(callback: () => void): void {
+            this.timePanelBinder.setToggleListener(callback);
         }
 
         public setStartEndTime(startTime: number, endTime: number): void {
