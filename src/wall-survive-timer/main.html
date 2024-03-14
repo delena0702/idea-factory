@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>벽짓살 타이머</title>
+    <link href="../../bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="main.js"></script>
+    <script src="view.js"></script>
+    <script src="runner.js"></script>
+
+    <style>
+        * {
+            --timeline-bar-height: 30px;
+        }
+
+        .timeline-bar {
+            height: var(--timeline-bar-height);
+        }
+
+        pre {
+            display: inline;
+            border: 1px solid blueviolet;
+        }
+
+        .boss-tag>span:first-child {
+            border-left: 0 !important;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 타임라인 -->
+    <div class="container">
+        <div id="timeline" class="position-relative my-3">
+            <div id="template-up-mark" class="position-absolute">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="30" fill="currentColor" viewBox="0 0 32 48">
+                    <path d="M0.5 0.5H31.5V31.7929L16 47.2929L0.5 31.7929V0.5Z" stroke="" />
+                </svg>
+            </div>
+    
+            <div id="template-down-mark" class="position-absolute">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="30" fill="currentColor" viewBox="0 0 32 48">
+                    <path d="M0.5 47.5H31.5V16.2071L16 0.707108L0.5 16.2071V47.5Z" stroke="" />
+                </svg>
+            </div>
+    
+            <div class="timeline-bar">
+                <!-- 위쪽 여백 -->
+            </div>
+    
+            <div class="progress" role="progressbar">
+                <!-- 막대 -->
+                <div id="progress-bar" class="progress-bar text-bg-primary" style="width: 15%;"></div>
+            </div>
+    
+            <div class="timeline-bar d-flex justify-content-between">
+                <!-- 타임라인의 시작 시간 / 끝 시간 -->
+                <p id="start-time" class="lead">00:00</p>
+                <p id="end-time" class="lead">30:00</p>
+            </div>
+    
+            <div id="up-mark-bar" class="position-absolute top-0 start-0 end-0 timeline-bar">
+                <!-- 위쪽 타임바 -->
+            </div>
+    
+            <div id="down-mark-bar" class="position-absolute bottom-0 start-0 end-0 timeline-bar">
+                <!-- 아래쪽 타임바 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 메인 시간 확인 공간 -->
+    <div id="time-panel" class="container">
+        <!-- 시간 출력 -->
+        <div class="row my-3">
+            <div id="btn-play" class="d-flex w-100 justify-content-center align-items-center" role="button">
+                <p id="output-time" class="my-3 display-1">12:13.0</p>
+            </div>
+        </div>
+
+        <!-- 시간 이동 UI -->
+        <div class="row align-items-center">
+            <div class="col-3 col-sm-2 text-center p-1">
+                <button id="btn-1" type="button" class="btn btn-primary w-100 px-0">-10</button>
+            </div>
+            <div class="col-3 col-sm-2 text-center p-1">
+                <button id="btn-2" type="button" class="btn btn-primary w-100 px-0">-1</button>
+            </div>
+            <div class="col-3 col-sm-2 text-center p-1">
+                <button id="btn-3" type="button" class="btn btn-primary w-100 px-0">+1</button>
+            </div>
+            <div class="col-3 col-sm-2 text-center p-1">
+                <button id="btn-4" type="button" class="btn btn-primary w-100 px-0">+10</button>
+            </div>
+
+            <div class="col-12 col-sm-4 p-1">
+                <div class="input-group input-group-sm w-auto">
+                    <input id="input-time" type="text" class="form-control text-center" placeholder="00:00">
+                    <span id="btn-skip" class="input-group-text" role="button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor"
+                            class="bi bi-skip-end" viewBox="0 0 16 16">
+                            <path
+                                d="M12.5 4a.5.5 0 0 0-1 0v3.248L5.233 3.612C4.713 3.31 4 3.655 4 4.308v7.384c0 .653.713.998 1.233.696L11.5 8.752V12a.5.5 0 0 0 1 0zM5 4.633 10.804 8 5 11.367z" />
+                        </svg>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 각 이벤트 확인 뷰 -->
+    <div id="schedule-table" class="container my-5">
+        <div id="template-schedule-row" class="row border">
+            <!-- 전조 선택 전 -->
+            <div id="template-predict-no-select" class="row">
+                <div class="col-12 col-md-2 text-center p-3">
+                    <div class="d-flex flex-wrap justify-content-center align-items-center h-100">
+                        <div class="mx-2">
+                            <p id="text-time" class="d-inline lead">40:48</p>
+                            <p id="text-time-remain" class="d-inline text-body-secondary"><small>(-1:23:34)</small></p>
+                        </div>
+                        <div class="mx-2 text-nowrap">
+                            남은 수급 : <span id="text-remain-supply"></span>
+                        </div>
+                    </div>
+                </div>
+                <div id="select-1" class="col-6 col-md-5 p-3 text-center" role="button">
+                    <div class="row justify-content-center align-items-center">
+                        <p id="text-1-predict" class="col-12 col-md-5"><small>공생축</small></p>
+                        <p class="d-none d-md-block col-md-1">→</p>
+                        <p id="text-1-main" class="col-12 col-md-6 lead">군단숙주</p>
+                        <div id="tag-1-container" class="col-12 boss-tag d-flex flex-wrap justify-content-center">
+                            <span id="template-tag"
+                                class="mx-1 badge rounded-pill text-black bg-secondary-subtle">지상</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="select-2" class="col-6 col-md-5 p-3 text-center" role="button">
+                    <div class="row justify-content-center align-items-center">
+                        <p id="text-2-predict" class="col-12 col-md-5"><small>식충</small></p>
+                        <p class="d-none d-md-block col-md-1">→</p>
+                        <p id="text-2-main" class="col-12 col-md-6 lead">촉수형제</p>
+                        <div id="tag-2-container" class="col-12 boss-tag d-flex flex-wrap justify-content-center">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 전조 선택 후 -->
+            <div id="template-predict-select" class="row">
+                <div class="col-12 col-md-2 text-center p-3">
+                    <div class="d-flex flex-wrap justify-content-center align-items-center h-100">
+                        <div class="mx-2">
+                            <p id="text-time" class="d-inline lead">40:48</p>
+                            <p id="text-time-remain" class="d-inline text-body-secondary"><small>(-1:23:34)</small></p>
+                        </div>
+                        <div class="mx-2 text-nowrap">
+                            남은 수급 : <span id="text-remain-supply"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-9 col-md-7 p-3 text-center">
+                    <div class="row justify-content-center align-items-center">
+                        <p id="text-1-predict" class="col-12 col-md-5"><small>방사능 미친개</small></p>
+                        <p class="d-none d-md-block col-md-1">→</p>
+                        <p id="text-1-main" class="col-12 col-md-6 lead">살모사</p>
+                        <div id="tag-1-container" class="col-12 boss-tag d-flex flex-wrap justify-content-center">
+                            <span id="template-tag"
+                                class="mx-1 badge rounded-pill text-black bg-secondary-subtle">지상</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="select-change" class="col-3 col-md-3 p-3 text-center" role="button">
+                    <div class="h-100 d-flex flex-column justify-content-center align-items-center">
+                        <div>→</div>
+                        <p id="text-2-main" class="col-12">오메가리스크</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 경고 발생 종료 (미선택) -->
+            <div id="template-boss-no-select" class="row">
+                <div class="col-12 d-flex p-3">
+                    <div class="m-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor"
+                            viewBox="0 0 160 160">
+                            <path
+                                d="M140 20L136.667 43.3333L63.3333 116.667L73.3333 126.667L60 140L46.6667 126.667L26.6667 146.667L13.3333 133.333L33.3333 113.333L20 100L33.3333 86.6667L43.3333 96.6667L116.667 23.3333L140 20Z" />
+                            <path
+                                d="M20 20L43.3334 23.3333L116.667 96.6667L126.667 86.6667L140 100L126.667 113.333L146.667 133.333L133.333 146.667L113.333 126.667L100 140L86.6667 126.667L96.6667 116.667L23.3334 43.3333L20 20Z" />
+                        </svg>
+                    </div>
+                    <div class="flex-grow-1 my-auto">
+                        <p id="text-1-main" class="m-0 text-center display-6">브루탈리스크</p>
+                        <p class="m-0 text-center lead w-100">or</p>
+                        <p id="text-2-main" class="m-0 text-center display-6">루탈이 친구</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 경고 발생 종료 -->
+            <div id="template-boss-select" class="row">
+                <div class="col-12 d-flex p-3">
+                    <div class="m-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor"
+                            viewBox="0 0 160 160">
+                            <path
+                                d="M140 20L136.667 43.3333L63.3333 116.667L73.3333 126.667L60 140L46.6667 126.667L26.6667 146.667L13.3333 133.333L33.3333 113.333L20 100L33.3333 86.6667L43.3333 96.6667L116.667 23.3333L140 20Z" />
+                            <path
+                                d="M20 20L43.3334 23.3333L116.667 96.6667L126.667 86.6667L140 100L126.667 113.333L146.667 133.333L133.333 146.667L113.333 126.667L100 140L86.6667 126.667L96.6667 116.667L23.3334 43.3333L20 20Z" />
+                        </svg>
+                    </div>
+                    <div class="flex-grow-1 my-auto">
+                        <p id="text-1-main" class="m-0 text-center display-6">브루탈리스크</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 단독 보스 -->
+            <div id="template-boss-one" class="row">
+                <div class="col-12 d-flex p-3">
+                    <div class="m-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor"
+                            viewBox="0 0 160 160">
+                            <path
+                                d="M140 20L136.667 43.3333L63.3333 116.667L73.3333 126.667L60 140L46.6667 126.667L26.6667 146.667L13.3333 133.333L33.3333 113.333L20 100L33.3333 86.6667L43.3333 96.6667L116.667 23.3333L140 20Z" />
+                            <path
+                                d="M20 20L43.3334 23.3333L116.667 96.6667L126.667 86.6667L140 100L126.667 113.333L146.667 133.333L133.333 146.667L113.333 126.667L100 140L86.6667 126.667L96.6667 116.667L23.3334 43.3333L20 20Z" />
+                        </svg>
+                    </div>
+                    <div class="flex-grow-1 my-auto">
+                        <p id="text-1-main" class="m-0 text-center display-6">브루탈리스크</p>
+                        <div id="tag-1-container" class="col-12 boss-tag d-flex flex-wrap justify-content-center">
+                            <span id="template-tag"
+                                class="mx-1 badge rounded-pill text-black bg-secondary-subtle">지상</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 주의 -->
+            <div id="template-warning" class="row">
+                <div class="col-12 d-flex p-3">
+                    <div class="m-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor"
+                            class="bi bi-exclamation-diamond-fill" viewBox="0 0 16 16">
+                            <path
+                                d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM8 4c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995A.905.905 0 0 1 8 4m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2" />
+                        </svg>
+                    </div>
+                    <div class="flex-grow-1 my-auto">
+                        <p id="text-1-main" class="m-0 text-center display-6">경고</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="../../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

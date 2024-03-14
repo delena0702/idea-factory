@@ -1,0 +1,18 @@
+{
+  "name": "idea-factory",
+  "version": "1.0.0",
+  "description": "취미로 만드는 각종 웹 페이지를 올리는 공간입니다.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/delena0702/idea-factory.git"
+  },
+  "author": "delena0702",
+  "license": "GPL-3.0-only",
+  "bugs": {
+    "url": "https://github.com/delena0702/idea-factory/issues"
+  },
+  "homepage": "https://github.com/delena0702/idea-factory#readme",
+  "dependencies": {
+    "bootstrap": "^5.3.2"
+  }
+}
