@@ -1,5 +1,5 @@
 import { Testable, Tester } from '../../test';
-import { WallSurviveTimer } from './main';
+// import { WallSurviveTimer } from './main';
 
 class TimeConverterTest extends Testable {
     static test_str2num_정상동작(): void {
