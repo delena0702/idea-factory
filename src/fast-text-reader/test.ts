@@ -73,8 +73,6 @@ namespace FastTextReaderTest {
             config.wordMaximumLength = 10;
             config.longWordProcessMethod = FastTextReader.LongWordProcessMethod.SHOW_LONG_TIME;
 
-            const answer = text.split(' ');
-
             const processor = new FastTextReader.TextProcessor();
             processor.setText(text);
             processor.setConfig(config);
