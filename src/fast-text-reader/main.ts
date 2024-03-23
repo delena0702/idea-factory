@@ -97,6 +97,8 @@ export namespace FastTextReader {
 
         private interval: number | null;
 
+        private playingFlag: boolean;
+
         private config: Config;
 
         constructor() {
@@ -105,6 +107,8 @@ export namespace FastTextReader {
             this.proc = () => { };
 
             this.interval = null;
+
+            this.playingFlag = false;
 
             this.config = Config.getDefault();
         }
@@ -121,6 +125,10 @@ export namespace FastTextReader {
             this.config = new Config(config);
         }
 
+        public isPlaying(): boolean {
+            return this.playingFlag;
+        }
+
         public start(): void {
             if (this.interval !== null)
                 FastTextReaderError.invalidTimerMethodError();
@@ -134,10 +142,12 @@ export namespace FastTextReader {
                 FastTextReaderError.invalidTimerMethodError();
 
             const delay = Math.round(60000 / this.config.speed);
-            this.runProc();
             this.interval = setInterval(() => {
                 this.runProc();
             }, delay);
+            this.playingFlag = true;
+
+            this.runProc();
         }
 
         public stop(): void {
@@ -151,6 +161,7 @@ export namespace FastTextReader {
 
             clearInterval(this.interval);
             this.interval = null;
+            this.playingFlag = false;
         }
 
         private runProc(): void {
@@ -161,10 +172,6 @@ export namespace FastTextReader {
 
             this.proc(this.tic);
             this.tic++;
-        }
-
-        public toggle(): void {
-
         }
 
         public skip(tic: number): void {

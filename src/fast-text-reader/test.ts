@@ -136,17 +136,20 @@ namespace FastTextReaderTest {
                 }, answerTotalTime * 2);
 
                 let idx = 0;
+                this.assert(timer.isPlaying() == false);
 
                 const start = new Date().getTime();
                 timer.setProc((tic: number) => {
                     this.assert(0 <= tic && tic < endTic);
                     this.assert(tic == idx++);
+                    this.assert(timer.isPlaying() == true);
 
                     if (tic == endTic - 1) {
                         const end = new Date().getTime();
 
                         const result = Math.abs((end - start) - answerTotalTime);
                         this.assert(result / answerTotalTime < 0.1);
+                        timer.stop();
                         clearTimeout(tmout);
                         res(true);
                     }
@@ -156,6 +159,7 @@ namespace FastTextReaderTest {
             });
 
             this.assert(result);
+            this.assert(timer.isPlaying() == false);
         }
 
         static async test_정지_동작() {
