@@ -90,9 +90,97 @@ export namespace FastTextReader {
         }
     }
 
+    export class Timer implements Configable {
+        private tic: number;
+        private endTic: number;
+        private proc: (tic: number) => void;
+
+        private interval: number | null;
+
+        private config: Config;
+
+        constructor() {
+            this.tic = 0;
+            this.endTic = 0;
+            this.proc = () => { };
+
+            this.interval = null;
+
+            this.config = Config.getDefault();
+        }
+
+        public setEndTic(endTic: typeof this.endTic) {
+            this.endTic = endTic;
+        }
+
+        public setProc(callback: typeof this.proc) {
+            this.proc = callback;
+        }
+
+        public setConfig(config: Config): void {
+            this.config = new Config(config);
+        }
+
+        public start(): void {
+            if (this.interval !== null)
+                FastTextReaderError.invalidTimerMethodError();
+
+            this.tic = 0;
+            this.resume();
+        }
+
+        public resume(): void {
+            if (this.interval !== null)
+                FastTextReaderError.invalidTimerMethodError();
+
+            const delay = Math.round(60000 / this.config.speed);
+            this.runProc();
+            this.interval = setInterval(() => {
+                this.runProc();
+            }, delay);
+        }
+
+        public stop(): void {
+            this.pause();
+            this.tic = 0;
+        }
+
+        public pause(): void {
+            if (this.interval === null)
+                FastTextReaderError.invalidTimerMethodError();
+
+            clearInterval(this.interval);
+            this.interval = null;
+        }
+
+        private runProc(): void {
+            if (this.tic == this.endTic) {
+                this.stop();
+                return;
+            }
+
+            this.proc(this.tic);
+            this.tic++;
+        }
+
+        public toggle(): void {
+
+        }
+
+        public skip(tic: number): void {
+            if (!(0 <= tic && tic < this.endTic))
+                throw FastTextReaderError.invalidTimerMethodError();
+            this.tic = tic;
+        }
+    }
+
     export class FastTextReaderError extends Error {
         static invalidIndex(): never {
-            throw new FastTextReaderError(`올바르지 않은 index값 입니다.`);
+            throw new this(`올바르지 않은 index값 입니다.`);
+        }
+
+        static invalidTimerMethodError(): never {
+            throw new this(`올바르지 않은 timer 접근입니다.`);
         }
     }
 }

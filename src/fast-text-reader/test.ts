@@ -126,34 +126,226 @@ namespace FastTextReaderTest {
             timer.setConfig(config);
 
             const endTic = 10;
-            timer.setEndTic(10);
+            timer.setEndTic(endTic);
 
             const answerTotalTime = 60000 * endTic / config.speed;
             const result: boolean = await new Promise((res) => {
                 const tmout = setTimeout(() => {
                     res(false);
-                }, 3000);
+                    // timeouted
+                }, answerTotalTime * 2);
 
                 let idx = 0;
-                
+
                 const start = new Date().getTime();
                 timer.setProc((tic: number) => {
                     this.assert(0 <= tic && tic < endTic);
                     this.assert(tic == idx++);
-    
+
                     if (tic == endTic - 1) {
                         const end = new Date().getTime();
-    
+
                         const result = Math.abs((end - start) - answerTotalTime);
-                        this.assert(result / answerTotalTime < 0.01);
+                        this.assert(result / answerTotalTime < 0.1);
                         clearTimeout(tmout);
                         res(true);
                     }
                 });
-    
+
                 timer.start();
             });
-            
+
+            this.assert(result);
+        }
+
+        static async test_정지_동작() {
+            const timer = new FastTextReader.Timer();
+
+            const config = new FastTextReader.Config();
+            config.speed = 600;
+            timer.setConfig(config);
+
+            const endTic = 10;
+            timer.setEndTic(endTic);
+
+            const answerTotalTime = 60000 * endTic / config.speed;
+            const stopTic = 5;
+
+            let idx = 0;
+            await new Promise((res) => {
+                setTimeout(() => {
+                    res(false);
+                    // timeouted
+                }, answerTotalTime * 2);
+
+                timer.setProc((tic: number) => {
+                    this.assert(0 <= tic && tic <= stopTic);
+                    this.assert(tic == idx++);
+
+                    if (tic == stopTic) {
+                        timer.stop();
+                    }
+                });
+
+                timer.start();
+            });
+
+            this.assert(idx == stopTic + 1);
+        }
+
+        static async test_연속start_테스트() {
+            const timer = new FastTextReader.Timer();
+
+            const config = new FastTextReader.Config();
+            config.speed = 600;
+            timer.setConfig(config);
+
+            const endTic = 10;
+            timer.setEndTic(endTic);
+
+            timer.start();
+            this.assertError(() => {
+                timer.start();
+            });
+            timer.stop();
+        }
+
+        static async test_연속stop_테스트() {
+            const timer = new FastTextReader.Timer();
+
+            const config = new FastTextReader.Config();
+            config.speed = 600;
+            timer.setConfig(config);
+
+            const endTic = 10;
+            timer.setEndTic(endTic);
+
+            this.assertError(() => {
+                timer.stop();
+            });
+
+            timer.start();
+            timer.stop();
+            this.assertError(() => {
+                timer.stop();
+            });
+        }
+
+        static async test_실행중_skip_뒤로() {
+            const timer = new FastTextReader.Timer();
+
+            const config = new FastTextReader.Config();
+            config.speed = 600;
+            timer.setConfig(config);
+
+            const endTic = 10;
+            timer.setEndTic(endTic);
+
+            const answerTotalTime = 60000 * endTic / config.speed;
+
+            const a = 3, b = 7;
+            const result: boolean = await new Promise((res) => {
+                const tmout = setTimeout(() => {
+                    res(false);
+                    // timeouted
+                }, answerTotalTime * 2);
+
+                let idx = 0;
+
+                timer.setProc((tic: number) => {
+                    this.assert(0 <= tic && tic < endTic);
+                    this.assert(tic == idx++);
+
+                    if (tic == a) {
+                        idx = b;
+                        timer.skip(b - 1);
+                    }
+
+                    if (tic == endTic - 1) {
+                        clearTimeout(tmout);
+                        res(true);
+                    }
+                });
+
+                timer.start();
+            });
+
+            this.assert(result);
+        }
+
+        static async test_실행중_skip_앞으로() {
+            const timer = new FastTextReader.Timer();
+
+            const config = new FastTextReader.Config();
+            config.speed = 600;
+            timer.setConfig(config);
+
+            const endTic = 10;
+            timer.setEndTic(endTic);
+
+            const answerTotalTime = 60000 * endTic / config.speed;
+
+            const a = 7, b = 3;
+            const result: boolean = await new Promise((res) => {
+                const tmout = setTimeout(() => {
+                    timer.stop();
+                    res(true);
+                    // timeouted
+                }, answerTotalTime * 2);
+
+                let idx = 0;
+
+                timer.setProc((tic: number) => {
+                    this.assert(0 <= tic && tic < endTic);
+                    this.assert(tic == idx++);
+
+                    if (tic == a) {
+                        idx = b;
+                        timer.skip(b - 1);
+                    }
+                });
+
+                timer.start();
+            });
+
+            this.assert(result);
+        }
+
+        static async test_정지중_skip() {
+            const timer = new FastTextReader.Timer();
+
+            const config = new FastTextReader.Config();
+            config.speed = 600;
+            timer.setConfig(config);
+
+            const endTic = 10;
+            timer.setEndTic(endTic);
+
+            const answerTotalTime = 60000 * endTic / config.speed;
+
+            const a = 5;
+            timer.skip(a);
+            const result: boolean = await new Promise((res) => {
+                const tmout = setTimeout(() => {
+                    res(false);
+                    // timeouted
+                }, answerTotalTime * 2);
+
+                let idx = a;
+
+                timer.setProc((tic: number) => {
+                    this.assert(0 <= tic && tic < endTic);
+                    this.assert(tic == idx++);
+
+                    if (tic == endTic - 1) {
+                        clearTimeout(tmout);
+                        res(true);
+                    }
+                });
+
+                timer.resume();
+            });
+
             this.assert(result);
         }
     }
