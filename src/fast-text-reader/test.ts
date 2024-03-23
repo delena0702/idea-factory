@@ -3,7 +3,7 @@ import { FastTextReader } from "./main";
 
 namespace FastTextReaderTest {
     export class TextSpliterTest extends Testable {
-        static test_split_기본_실행(): void {
+        static test_split_기본_실행() {
             const text = `가나다라 마바사 abcd あはは`;
             const answer = text.split(' ');
 
@@ -14,7 +14,7 @@ namespace FastTextReaderTest {
                 this.assert(result[i] == answer[i]);
         }
 
-        static test_split_공백이_2개_이상(): void {
+        static test_split_공백이_2개_이상() {
             const text = `가나다라   마바사   abcd   \n\n    あはは`;
             const answer = [
                 '가나다라',
@@ -30,7 +30,7 @@ namespace FastTextReaderTest {
                 this.assert(result[i] == answer[i]);
         }
 
-        static test_split_maxLength_설정(): void {
+        static test_split_maxLength_설정() {
             const text = `1 2글 3글자 4글자입 5글자입니 6글자입니다 7글자입니다.`;
             const answer = [
                 '1',
@@ -49,81 +49,79 @@ namespace FastTextReaderTest {
         }
     }
 
-    export class TextDataTest extends Testable {
-        static test_기본_실행(): void {
-            const reader = new FastTextReader.TextData();
-            const text = `가나다라 마바사 abcd あはは`;
+    export class TextProcessorTest extends Testable {
+        static test_기본_동작() {
+            const text = `대충 동작하는지 확인하는 문장`;
+            const config = new FastTextReader.Config();
+            config.wordMaximumLength = 10;
+            config.longWordProcessMethod = FastTextReader.LongWordProcessMethod.SHOW_LONG_TIME;
+
             const answer = text.split(' ');
 
-            reader.setText(text);
-            while (!reader.isEnd()) {
-                const result = reader.get();
-                reader.next();
+            const processor = new FastTextReader.TextProcessor();
+            processor.setText(text);
+            processor.setConfig(config);
 
-                this.assert(result == answer.shift());
-            }
+            this.assert(answer.length == processor.getLength());
+            for (let i = 0; i < answer.length; i++)
+                this.assert(answer[i] == processor.get(i));
         }
 
-        static test_텍스트가_설정되지_않음(): void {
-            const reader = new FastTextReader.TextData();
-
-            this.assertError(() => { reader.get(); });
-            this.assertError(() => { reader.isEnd(); });
-            this.assertError(() => { reader.next(); });
-            this.assertError(() => { reader.move(0); });
-        }
-
-        static test_기본_config_적용1(): void {
+        static test_인덱스_초과() {
+            const text = `0 1 2 3 4`;
             const config = new FastTextReader.Config();
-            config.wordMaximumLength = 3;
+            config.wordMaximumLength = 10;
+            config.longWordProcessMethod = FastTextReader.LongWordProcessMethod.SHOW_LONG_TIME;
+
+            const answer = text.split(' ');
+
+            const processor = new FastTextReader.TextProcessor();
+            processor.setText(text);
+            processor.setConfig(config);
+
+            const length = processor.getLength();
+
+            this.assertError(() => {
+                processor.get(-1);
+            });
+
+            this.assertError(() => {
+                processor.get(length);
+            });
+        }
+
+        static test_글씨_쪼개기() {
+            const text = `글자가쪼개져야합니다`;
+            const config = new FastTextReader.Config();
+            config.wordMaximumLength = 5;
             config.longWordProcessMethod = FastTextReader.LongWordProcessMethod.SPLIT;
 
-            const reader = new FastTextReader.TextData();
-            reader.setConfig(config);
+            const processor = new FastTextReader.TextProcessor();
+            processor.setText(text);
+            processor.setConfig(config);
 
-            const text = `가나다라 마바사 abcd あはは`;
-            const answer = `가나다 라 마바사 abc d あはは`.split(' ');
-            reader.setText(text);
-            while (!reader.isEnd()) {
-                const result = reader.get();
-                reader.next();
-
-                this.assert(result == answer.shift());
-            }
+            const length = processor.getLength();
+            this.assert(length == 2);
         }
 
-        static test_move_적용(): void {
-            const reader = new FastTextReader.TextData();
+        static test_글씨_쪼개지면_안됨() {
+            const text = `글자가안쪼개져야합니다`;
+            const config = new FastTextReader.Config();
+            config.wordMaximumLength = 5;
+            config.longWordProcessMethod = FastTextReader.LongWordProcessMethod.SHOW_LONG_TIME;
 
-            const text = `0 1 2 3 4 5 6`;
-            reader.setText(text);
+            const processor = new FastTextReader.TextProcessor();
+            processor.setText(text);
+            processor.setConfig(config);
 
-            for (let i = 0; i < 7; i++) {
-                reader.move(i);
-                this.assert(reader.get() == i.toString());
-            }
-
-            reader.move(7);
-            this.assert(reader.isEnd() === true);
-        }
-
-        static test_인덱스_에러들(): void {
-            const reader = new FastTextReader.TextData();
-
-            const text = `0 1 2 3 4 5 6`;
-            reader.setText(text);
-
-            this.assertError(() => { reader.move(-1); });
-            this.assertError(() => { reader.move(8); });
-
-            reader.move(7);
-            this.assertError(() => { reader.get(); });
+            const length = processor.getLength();
+            this.assert(length == 1);
         }
     }
 }
 
-Testable.errorClass = Error;
+Testable.errorClass = FastTextReader.FastTextReaderError;
 Tester.run([
     FastTextReaderTest.TextSpliterTest,
-    FastTextReaderTest.TextDataTest,
+    FastTextReaderTest.TextProcessorTest,
 ]);
