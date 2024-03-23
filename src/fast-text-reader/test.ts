@@ -116,10 +116,52 @@ namespace FastTextReaderTest {
             this.assert(length == 1);
         }
     }
+
+    export class TimerTest extends Testable {
+        static async test_기본_동작() {
+            const timer = new FastTextReader.Timer();
+
+            const config = new FastTextReader.Config();
+            config.speed = 600;
+            timer.setConfig(config);
+
+            const endTic = 10;
+            timer.setEndTic(10);
+
+            const answerTotalTime = 60000 * endTic / config.speed;
+            const result: boolean = await new Promise((res) => {
+                const tmout = setTimeout(() => {
+                    res(false);
+                }, 3000);
+
+                let idx = 0;
+                
+                const start = new Date().getTime();
+                timer.setProc((tic: number) => {
+                    this.assert(0 <= tic && tic < endTic);
+                    this.assert(tic == idx++);
+    
+                    if (tic == endTic - 1) {
+                        const end = new Date().getTime();
+    
+                        const result = Math.abs((end - start) - answerTotalTime);
+                        this.assert(result / answerTotalTime < 0.01);
+                        clearTimeout(tmout);
+                        res(true);
+                    }
+                });
+    
+                timer.start();
+            });
+            
+            this.assert(result);
+        }
+    }
 }
 
 Testable.errorClass = FastTextReader.FastTextReaderError;
 Tester.run([
     FastTextReaderTest.TextSpliterTest,
     FastTextReaderTest.TextProcessorTest,
+    FastTextReaderTest.TimerTest,
 ]);
