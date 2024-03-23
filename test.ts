@@ -1,7 +1,7 @@
 export class Testable {
     static errorClass: Function = Error;
 
-    static run(): [number, number] {
+    static async run(): Promise<[number, number]> {
         const cls: { [key: string]: any } = this;
 
         let cnt: [number, number] = [0, 0];
@@ -13,7 +13,7 @@ export class Testable {
 
             cnt[1]++;
             try {
-                cls[key]();
+                await cls[key]();
                 console.log(`${cls.name}.${key} Success!`);
                 cnt[0]++;
             } catch (e) {
@@ -46,11 +46,11 @@ export class Testable {
 }
 
 export class Tester {
-    static run(classes: typeof Testable[]): void {
+    static async run(classes: typeof Testable[]): Promise<void> {
         const total_result = [0, 0];
         for (const cls of classes) {
             console.group(`${cls.name} ${'='.repeat(50)}`);
-            const result = cls.run();
+            const result = await cls.run();
 
             total_result[0] += result[0];
             total_result[1] += result[1];
